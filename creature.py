@@ -30,7 +30,8 @@ class Creature:
         ratio1 = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
         ratio2 = self.genetics.energy_capacity  # Already normalized between MIN/MAX and 1
         ratio3 = self.genetics.action_zone_ratio  # Already normalized between MIN/MAX and 1
-        return (ratio1 + ratio2 + ratio3) * params.GENERAL_ENERGY_CONSUMPTION / 2  # 0.01 scaling factor to keep it reasonable
+        ratio4 = self.genetics.consume_other_creatures_ratio  # Already normalized between MIN/MAX and 1
+        return (ratio1 + ratio2 + ratio3 + ratio4) * params.GENERAL_ENERGY_CONSUMPTION / 4  # 0.01 scaling factor to keep it reasonable
 
     def initialize_brain(self):
         """Initialize a simple neural network."""
@@ -65,13 +66,47 @@ class Creature:
         return np.array(inputs)
 
     def calculate_color(self):
-        """Calculate color based on energy."""
-        if self.lifespan > 0:
-            green_value = min(int(54 + self.genetics.production_rate * 200), 255)
-            red_value = min(int(54 + self.genetics.consumption_rate * 200), 255)
-            return (red_value, green_value, 0)
-        else:
-            return (255, 255, 255)  # White if energy is 0
+        """
+        Calculate the color of the creature based on its genetic parameters.
+        - High production rate: More green.
+        - High consumption rate or tendency to consume other creatures: More red.
+        - Other parameters (energy_capacity, action_zone_ratio): Influence blue.
+        """
+        # Normalize genetic parameters to a range of 0-1
+        production_rate_norm = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
+        consumption_rate_norm = self.genetics.consumption_rate / params.CONSUMPTION_RATE_MAX
+        consume_other_creatures_ratio_norm = self.genetics.consume_other_creatures_ratio / params.CONSUME_OTHER_CREATURES_RATIO_MAX
+        energy_capacity_norm = self.genetics.energy_capacity  # Already normalized between MIN/MAX and 1
+        action_zone_ratio_norm = self.genetics.action_zone_ratio  # Already normalized between MIN/MAX and 1
+
+        # Calculate dominant color components
+        # Green is dominant if production rate is significantly higher than consumption rate
+        green_value = int(54 + production_rate_norm * 200)
+        # Red is dominant if consumption rate or tendency to consume other creatures is high
+        red_value = int(54 + max(consumption_rate_norm, consume_other_creatures_ratio_norm) * 200)
+        # Blue is influenced by energy capacity and action zone ratio
+        blue_value = int(54 + (energy_capacity_norm + action_zone_ratio_norm) / 2 * 200)
+
+        # Adjust colors to make dominant traits more visible
+        if production_rate_norm > consumption_rate_norm and production_rate_norm > consume_other_creatures_ratio_norm:
+            # More green if production is dominant
+            green_value = min(255, green_value + 50)
+            red_value = max(0, red_value - 50)
+        elif consume_other_creatures_ratio_norm > production_rate_norm and consume_other_creatures_ratio_norm > consumption_rate_norm:
+            # More red if consuming other creatures is dominant
+            red_value = min(255, red_value + 50)
+            green_value = max(0, green_value - 50)
+        elif consumption_rate_norm > production_rate_norm and consumption_rate_norm > consume_other_creatures_ratio_norm:
+            # More red if consumption is dominant
+            red_value = min(255, red_value + 50)
+            green_value = max(0, green_value - 50)
+
+        # Ensure color values are within the valid range (0-255)
+        red_value = min(red_value, 255)
+        green_value = min(green_value, 255)
+        blue_value = min(blue_value, 255)
+
+        return (red_value, green_value, blue_value)
 
     def update(self, world):
         """Update the creature's state."""
@@ -80,7 +115,8 @@ class Creature:
             self.energy -= params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consumption_rate
             # Aging effect
             self.energy -= params.GENERAL_ENERGY_CONSUMPTION * (self.lifespan / params.AGING_LEVEL_STARTS)
-            self.energy += params.GENERAL_ENERGY_PRODUCTION * self.genetics.production_rate
+            crowded_calculation_ratio = min(1,params.CROWDED_ZONE_THRESHOLD / world.get_crowded_zone_count(self))
+            self.energy += params.GENERAL_ENERGY_PRODUCTION * self.genetics.production_rate * crowded_calculation_ratio
             self.energy = min(self.energy, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY) # Keep energy within bounds
             self.lifespan += 1  # Increment lifespan
             self.calculate_action_cost()
@@ -173,7 +209,7 @@ class Creature:
     def consume_other_creature(self, world):
         creatures_in_zone = world.get_creatures_in_action_zone(self)
         for other_creature in creatures_in_zone:
-            energy_to_eat = params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consumption_rate
+            energy_to_eat = params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consume_other_creatures_ratio
             other_creature.energy -= energy_to_eat
             self.energy += energy_to_eat
         self.perform_action_cost()

@@ -9,7 +9,7 @@ import threading
 import numpy as np
 from genetics import Genetics
 import saveSimulation as sim
-
+import graph as graph
 
 start_new_sim = True
 #start_new_sim = False
@@ -18,12 +18,34 @@ if (start_new_sim):
 # Initialize the world
     w = World(params.WIDTH, params.HEIGHT)
     # Initialize creatures
+    genetics_list = []
+    producer_genetics = Genetics()
+    producer_genetics.consumption_rate = 0
+    producer_genetics.action_zone_ratio = 0
+    producer_genetics.production_rate = 1
+    producer_genetics.energy_capacity = 0.2
+    producer_genetics.consume_other_creatures_ratio = 0
+    for _ in range(0):
+        genetics_list.append(producer_genetics)
+
+    consumer_genetics = Genetics()
+    consumer_genetics.consumption_rate = 0.25
+    consumer_genetics.action_zone_ratio = 0.5
+    consumer_genetics.production_rate = 0.2
+    consumer_genetics.energy_capacity = 0.6
+    consumer_genetics.consume_other_creatures_ratio = 1
+    for _ in range(0):
+        genetics_list.append(consumer_genetics)
+
     while len(w.creatures) < params.MAX_CREATURES:
         x = random.randint(0, params.WIDTH - params.CREATURE_SIZE_MAX)
         y = random.randint(0, params.HEIGHT - params.CREATURE_SIZE_MAX)
         if w.can_fit(x, y, params.CREATURE_SIZE_MAX):
             # Create a new creature with random genetics
-            new_genetics = Genetics()
+            if (len(genetics_list)>0):
+                new_genetics = genetics_list.pop()
+            else:
+                new_genetics = Genetics()
             new_creature = Creature(x, y, genetics=new_genetics)
             w.add_creature(new_creature)
         else:
@@ -44,54 +66,14 @@ steps = []
 total_creatures = []
 production_rates = []
 
-
-
-# Function to plot the graph in a separate thread
-def plot_graph():
-    plt.ion()  # Turn on interactive mode
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 4))
-
-    while running:
-        if steps and total_creatures:
-            # Plot Total Creatures
-            ax1.clear()
-            ax1.plot(steps, total_creatures, label="Total Creatures", color="blue")
-            ax1.set_xlabel("Simulation Steps")
-            ax1.set_ylabel("Number of Creatures")
-            ax1.set_title("Total Number of Creatures Over Time")
-            ax1.legend()
-            ax1.grid(True)
-
-            # Plot Error Bar for Production Rate
-            if production_rates:
-                avg_rates = [np.mean(rates) for rates in production_rates]
-                min_rates = [np.min(rates) for rates in production_rates]
-                max_rates = [np.max(rates) for rates in production_rates]
-
-                yerr = [np.array(avg_rates) - np.array(min_rates), np.array(max_rates) - np.array(avg_rates)]
-                ax2.clear()
-                ax2.errorbar(steps, avg_rates, yerr=yerr, fmt='-o', color="green", ecolor="gray", capsize=5, label="Production Rate")
-                ax2.set_xlabel("Simulation Steps")
-                ax2.set_ylabel("Production Rate")
-                ax2.set_title("Production Rate (Min, Max, Avg) Over Time")
-                ax2.legend()
-                ax2.grid(True)
-
-            plt.pause(params.PLOT_PAUSE)  # Pause to update the plot
-
-    plt.close(fig)
+# Main loop
+step_count = 0
 
 # Start the graph plotting thread
 running = True
-graph_thread = threading.Thread(target=plot_graph)
+#graph_thread = threading.Thread(target=graph.plot_genetics_scatter(w.creatures))
 #graph_thread.start()
 
-# Simülasyon durumunu kaydet
-
-
-
-# Main loop
-step_count = 0
 while running:
     screen.fill((0, 0, 0))  # Clear screen
 
@@ -117,7 +99,7 @@ while running:
         # Print computation time
         computation_time = time.time() - last_step_time
         #print(f"Step computation time: {computation_time:.4f}")
-        print(f"Total creatures: {len(w.creatures)}")
+        #print(f"Total creatures: {len(w.creatures)}")
 
 
         if (len(w.creatures)) < 1:
@@ -144,7 +126,7 @@ while running:
     pygame.display.flip()
 
 # Wait for the graph thread to finish
-#graph_thread.join()
+graph_thread.join()
 
 # Quit Pygame
 pygame.quit()
