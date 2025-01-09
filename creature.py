@@ -156,6 +156,7 @@ class Creature:
                     new_energy = self.energy / 2
                     self.energy /= 2
                     self.lifespan = 0
+                    self.genetics.mutate(self.mutation_rate)
                     # Apply mutation
                     new_genetics = self.genetics.create_new_genetics(self.mutation_rate)
 
