@@ -138,8 +138,7 @@ while running:
         action_zone_radius = creature.genetics.action_zone_ratio * params.ACTION_ZONE_MAX  # Ensure a minimum radius
 
         # Draw the action zone as a circle
-        pygame.draw.circle(screen, (255, 255, 255), (center_x, center_y), action_zone_radius,
-                           1)  # White circle with 1px border
+        #pygame.draw.circle(screen, (255, 255, 255), (center_x, center_y), action_zone_radius, 1)  # White circle with 1px border
 
     # Update display
     pygame.display.flip()

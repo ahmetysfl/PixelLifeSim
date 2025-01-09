@@ -1,10 +1,11 @@
-import parameters
+import parameters as params
+import math
 
 
 class World:
     def __init__(self, width, height):
-        self.width = width + parameters.CREATURE_SIZE_MAX
-        self.height = height + parameters.CREATURE_SIZE_MAX
+        self.width = width + params.CREATURE_SIZE_MAX
+        self.height = height + params.CREATURE_SIZE_MAX
         self.world = [[0] * self.width for _ in range(self.height)]
         self.creatures = []
 
@@ -58,3 +59,37 @@ class World:
             self.creatures.remove(creature)
             return True
         return False
+
+    def get_creatures_in_action_zone(self, creature):
+        """
+        Get all creatures within the action zone of the given creature.
+
+        Args:
+            creature (Creature): The creature whose action zone is being checked.
+
+        Returns:
+            list: A list of creatures within the action zone.
+        """
+        creatures_in_zone = []
+        center_x = creature.x + creature.creature_size // 2  # Center of the creature
+        center_y = creature.y + creature.creature_size // 2  # Center of the creature
+
+        # Calculate the radius of the action zone
+        action_zone_radius = creature.genetics.action_zone_ratio * params.ACTION_ZONE_MAX
+
+        for other_creature in self.creatures:
+            if other_creature == creature:
+                continue  # Skip the creature itself
+
+            # Calculate the center of the other creature
+            other_center_x = other_creature.x + other_creature.creature_size // 2
+            other_center_y = other_creature.y + other_creature.creature_size // 2
+
+            # Calculate the distance between the two creatures
+            distance = math.sqrt((center_x - other_center_x) ** 2 + (center_y - other_center_y) ** 2)
+
+            # Check if the other creature is within the action zone
+            if distance <= action_zone_radius:
+                creatures_in_zone.append(other_creature)
+
+        return creatures_in_zone

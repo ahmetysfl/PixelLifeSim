@@ -13,7 +13,7 @@ class Creature:
         self.energy = random.uniform(1, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY)  # Energy between 1 and energy_capacity * MAX_ENERGY_CAPACITY
         self.maturity_level = int(params.MATURITY_LEVEL_MIN + params.MATURITY_LEVEL_MAX * self.genetics.production_rate)
         self.lifespan = 0
-        self.actions = [self.move_up, self.move_down, self.move_left, self.move_right, self.stay_still]
+        self.actions = [self.move_up, self.move_down, self.move_left, self.move_right, self.stay_still, self.consume_other_creature]
         self.brain = self.initialize_brain()
         self.mutation_rate = params.MUTATION_RATE
         self.color = self.calculate_color()
@@ -44,7 +44,6 @@ class Creature:
 
     def perform_action_cost(self):
         self.energy -= self.action_cost
-        self.color = self.calculate_color()
 
     def calculate_action(self):
         """Determine an action using the neural network."""
@@ -170,3 +169,11 @@ class Creature:
 
     def stay_still(self, world):
         pass  # Do nothing
+
+    def consume_other_creature(self, world):
+        creatures_in_zone = world.get_creatures_in_action_zone(self)
+        for other_creature in creatures_in_zone:
+            energy_to_eat = params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consumption_rate
+            other_creature.energy -= energy_to_eat
+            self.energy += energy_to_eat
+        self.perform_action_cost()
