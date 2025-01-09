@@ -25,7 +25,7 @@ if (start_new_sim):
             # Create a new creature with random genetics
             new_genetics = Genetics()
             new_creature = Creature(x, y, genetics=new_genetics)
-            w.creatures.append(new_creature)
+            w.add_creature(new_creature)
         else:
             continue
     sim.save_simulation_state(w, params)
