@@ -13,6 +13,7 @@ class Creature:
         self.energy = random.uniform(1, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY)  # Energy between 1 and energy_capacity * MAX_ENERGY_CAPACITY
         self.maturity_level = int(params.MATURITY_LEVEL_MIN + params.MATURITY_LEVEL_MAX * self.genetics.production_rate)
         self.lifespan = 0
+        self.crowded_calculation_ratio = 1
         self.actions = [self.move_up, self.move_down, self.move_left, self.move_right, self.stay_still, self.consume_other_creature]
         self.brain = self.initialize_brain()
         self.mutation_rate = params.MUTATION_RATE
@@ -58,9 +59,12 @@ class Creature:
         inputs = [
             self.x / params.WIDTH,
             self.y / params.HEIGHT,
-            self.energy,  # Normalized energy
-            self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY,
-            self.lifespan / 100,
+            self.energy / self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY,  # Normalized energy
+            self.lifespan / params.AGING_LEVEL_STARTS,
+            self.genetics.production_rate,
+            self.genetics.consume_other_creatures_ratio,
+            self.genetics.consumption_rate,
+            self.crowded_calculation_ratio,
             self.action_cost
         ]
         return np.array(inputs)
@@ -68,45 +72,33 @@ class Creature:
     def calculate_color(self):
         """
         Calculate the color of the creature based on its genetic parameters.
-        - High production rate: More green.
-        - High consumption rate or tendency to consume other creatures: More red.
-        - Other parameters (energy_capacity, action_zone_ratio): Influence blue.
+        - High production rate: Brighter green.
+        - High consumption rate or tendency to consume other creatures: Brighter red.
+        - Balanced traits: Bright yellow, with intensity based on the average of traits.
         """
         # Normalize genetic parameters to a range of 0-1
         production_rate_norm = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
         consumption_rate_norm = self.genetics.consumption_rate / params.CONSUMPTION_RATE_MAX
         consume_other_creatures_ratio_norm = self.genetics.consume_other_creatures_ratio / params.CONSUME_OTHER_CREATURES_RATIO_MAX
-        energy_capacity_norm = self.genetics.energy_capacity  # Already normalized between MIN/MAX and 1
-        action_zone_ratio_norm = self.genetics.action_zone_ratio  # Already normalized between MIN/MAX and 1
 
-        # Calculate dominant color components
-        # Green is dominant if production rate is significantly higher than consumption rate
-        green_value = int(54 + production_rate_norm * 200)
-        # Red is dominant if consumption rate or tendency to consume other creatures is high
-        red_value = int(54 + max(consumption_rate_norm, consume_other_creatures_ratio_norm) * 200)
-        # Blue is influenced by energy capacity and action zone ratio
-        blue_value = int(54 + (energy_capacity_norm + action_zone_ratio_norm) / 2 * 200)
-
-        # Adjust colors to make dominant traits more visible
-        if production_rate_norm > consumption_rate_norm and production_rate_norm > consume_other_creatures_ratio_norm:
-            # More green if production is dominant
-            green_value = min(255, green_value + 50)
-            red_value = max(0, red_value - 50)
-        elif consume_other_creatures_ratio_norm > production_rate_norm and consume_other_creatures_ratio_norm > consumption_rate_norm:
-            # More red if consuming other creatures is dominant
-            red_value = min(255, red_value + 50)
-            green_value = max(0, green_value - 50)
-        elif consumption_rate_norm > production_rate_norm and consumption_rate_norm > consume_other_creatures_ratio_norm:
-            # More red if consumption is dominant
-            red_value = min(255, red_value + 50)
-            green_value = max(0, green_value - 50)
-
-        # Ensure color values are within the valid range (0-255)
-        red_value = min(red_value, 255)
-        green_value = min(green_value, 255)
-        blue_value = min(blue_value, 255)
-
-        return (red_value, green_value, blue_value)
+        # Calculate the dominant trait and its intensity
+        if production_rate_norm > max(consumption_rate_norm, consume_other_creatures_ratio_norm) + 0.2:
+            # Green is dominant, intensity based on production rate
+            green_intensity = int(255 * production_rate_norm)
+            return (0, green_intensity, 0)  # Green with variable intensity
+        elif consume_other_creatures_ratio_norm > max(production_rate_norm, consumption_rate_norm) + 0.2:
+            # Red is dominant, intensity based on consume_other_creatures_ratio
+            red_intensity = int(255 * consume_other_creatures_ratio_norm)
+            return (red_intensity, 0, 0)  # Red with variable intensity
+        elif consumption_rate_norm > max(production_rate_norm, consume_other_creatures_ratio_norm) + 0.2:
+            # Red is dominant, intensity based on consumption rate
+            red_intensity = int(255 * consumption_rate_norm)
+            return (red_intensity, 0, 0)  # Red with variable intensity
+        else:
+            # Balanced traits: Bright yellow, intensity based on the average of traits
+            average_intensity = int(
+                255 * (production_rate_norm + consumption_rate_norm + consume_other_creatures_ratio_norm) / 3)
+            return (average_intensity, average_intensity, 0)  # Bright yellow with variable intensity
 
     def update(self, world):
         """Update the creature's state."""
@@ -115,8 +107,8 @@ class Creature:
             self.energy -= params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consumption_rate
             # Aging effect
             self.energy -= params.GENERAL_ENERGY_CONSUMPTION * (self.lifespan / params.AGING_LEVEL_STARTS)
-            crowded_calculation_ratio = min(1,params.CROWDED_ZONE_THRESHOLD / world.get_crowded_zone_count(self))
-            self.energy += params.GENERAL_ENERGY_PRODUCTION * self.genetics.production_rate * crowded_calculation_ratio
+            self.crowded_calculation_ratio = min(1,params.CROWDED_ZONE_THRESHOLD / world.get_crowded_zone_count(self))
+            self.energy += params.GENERAL_ENERGY_PRODUCTION * self.genetics.production_rate * self.crowded_calculation_ratio
             self.energy = min(self.energy, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY) # Keep energy within bounds
             self.lifespan += 1  # Increment lifespan
             self.calculate_action_cost()
@@ -126,8 +118,7 @@ class Creature:
         else:
             self.lifespan = -1  # Mark as dead if energy is 0
             world.delete_creature(self)
-
-        self.color = self.calculate_color()  # Update color based on energy
+ # Update color based on energy
 
     def perform_action(self, action_index, world):
         """Perform the action corresponding to the given index and subtract action cost."""
@@ -171,7 +162,6 @@ class Creature:
                     # Create new creature
                     new_creature = Creature(new_x, new_y, genetics=new_genetics)
                     new_creature.energy = new_energy
-                    new_creature.color = new_creature.calculate_color()
                     world.add_creature(new_creature)
                     break
 
