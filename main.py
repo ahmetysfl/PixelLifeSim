@@ -8,15 +8,29 @@ import parameters as params
 import threading
 import numpy as np
 from genetics import Genetics
-# import saveSimulation as sim
+import saveSimulation as sim
 
-import pickle
-import os
-import inspect
 
+#start_new_sim = True
+start_new_sim = False
+
+if (start_new_sim):
 # Initialize the world
-w = World(params.WIDTH, params.HEIGHT)
-
+    w = World(params.WIDTH, params.HEIGHT)
+    # Initialize creatures
+    while len(w.creatures) < params.MAX_CREATURES:
+        x = random.randint(0, params.WIDTH - params.CREATURE_SIZE_MAX)
+        y = random.randint(0, params.HEIGHT - params.CREATURE_SIZE_MAX)
+        if w.can_fit(x, y, params.CREATURE_SIZE_MAX):
+            # Create a new creature with random genetics
+            new_genetics = Genetics()
+            new_creature = Creature(x, y, genetics=new_genetics)
+            w.creatures.append(new_creature)
+        else:
+            continue
+    sim.save_simulation_state(w, params)
+else:
+    w, params = sim.load_simulation_state()
 # Pygame settings
 pygame.init()
 screen = pygame.display.set_mode((params.WIDTH, params.HEIGHT))
@@ -30,17 +44,7 @@ steps = []
 total_creatures = []
 production_rates = []
 
-# Initialize creatures
-while len(w.creatures) < params.MAX_CREATURES:
-    x = random.randint(0, params.WIDTH - params.CREATURE_SIZE_MAX)
-    y = random.randint(0, params.HEIGHT - params.CREATURE_SIZE_MAX)
-    if w.can_fit(x, y, params.CREATURE_SIZE_MAX):
-        # Create a new creature with random genetics
-        new_genetics = Genetics()
-        new_creature = Creature(x, y, genetics=new_genetics)
-        w.creatures.append(new_creature)
-    else:
-        continue
+
 
 # Function to plot the graph in a separate thread
 def plot_graph():
@@ -83,30 +87,9 @@ graph_thread = threading.Thread(target=plot_graph)
 #graph_thread.start()
 
 # Simülasyon durumunu kaydet
-def save_simulation_state(w, params, save_dir="saved_simulations"):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    existing_files = [f for f in os.listdir(save_dir) if f.startswith("simulation_")]
-    simulation_number = len(existing_files) + 1
-    simulation_filename = os.path.join(save_dir, f"simulation_{simulation_number}.pkl")
-    params_dict = {name: value for name, value in inspect.getmembers(params) if not name.startswith("__")}
-    with open(simulation_filename, "wb") as file:
-        pickle.dump({"w": w, "params": params_dict}, file)
-    print(f"Simulation state saved to {simulation_filename}")
-    return simulation_filename
 
-# Simülasyon durumunu yükle
-def load_simulation_state(simulation_filename):
-    with open(simulation_filename, "rb") as file:
-        data = pickle.load(file)
-    import parameters as params_module
-    for key, value in data["params"].items():
-        setattr(params_module, key, value)
-    print(f"Simulation state loaded from {simulation_filename}")
-    return data["w"], params_module
 
-save_simulation_state(w, params)
-#w, params = load_simulation_state("saved_simulations/simulation_6.pkl")
+
 # Main loop
 step_count = 0
 while running:
