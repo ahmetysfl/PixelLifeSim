@@ -11,8 +11,8 @@ from genetics import Genetics
 import saveSimulation as sim
 
 
-#start_new_sim = True
-start_new_sim = False
+start_new_sim = True
+#start_new_sim = False
 
 if (start_new_sim):
 # Initialize the world
@@ -127,7 +127,6 @@ while running:
     # Draw creatures
     for creature in w.creatures:
         pygame.draw.rect(screen, creature.color, (creature.x, creature.y, creature.creature_size, creature.creature_size))
-
     # Update display
     pygame.display.flip()
 

@@ -78,6 +78,8 @@ class Creature:
         if self.energy > 0:
             # Apply general energy consumption and production
             self.energy -= params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consumption_rate
+            # Aging effect
+            self.energy -= params.GENERAL_ENERGY_CONSUMPTION * (self.lifespan / params.AGING_LEVEL_STARTS)
             self.energy += params.GENERAL_ENERGY_PRODUCTION * self.genetics.production_rate
             self.energy = min(self.energy, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY) # Keep energy within bounds
             self.lifespan += 1  # Increment lifespan
