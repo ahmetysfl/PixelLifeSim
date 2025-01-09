@@ -29,7 +29,8 @@ class Creature:
         # Action cost is directly proportional to production rate and energy capacity
         ratio1 = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
         ratio2 = self.genetics.energy_capacity  # Already normalized between MIN/MAX and 1
-        return (ratio1 + ratio2) * params.GENERAL_ENERGY_CONSUMPTION / 2  # 0.01 scaling factor to keep it reasonable
+        ratio3 = self.genetics.action_zone_ratio  # Already normalized between MIN/MAX and 1
+        return (ratio1 + ratio2 + ratio3) * params.GENERAL_ENERGY_CONSUMPTION / 2  # 0.01 scaling factor to keep it reasonable
 
     def initialize_brain(self):
         """Initialize a simple neural network."""
@@ -83,6 +84,7 @@ class Creature:
             self.energy += params.GENERAL_ENERGY_PRODUCTION * self.genetics.production_rate
             self.energy = min(self.energy, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY) # Keep energy within bounds
             self.lifespan += 1  # Increment lifespan
+            self.calculate_action_cost()
             action_index = self.calculate_action()
             self.perform_action(action_index, world)  # Perform the chosen action
             self.reproduction(world)
