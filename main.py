@@ -124,9 +124,23 @@ while running:
             break
         last_step_time = current_time
 
-    # Draw creatures
+    # Draw creatures and their action zones
     for creature in w.creatures:
-        pygame.draw.rect(screen, creature.color, (creature.x, creature.y, creature.creature_size, creature.creature_size))
+        # Draw the creature itself
+        pygame.draw.rect(screen, creature.color,
+                         (creature.x, creature.y, creature.creature_size, creature.creature_size))
+
+        # Calculate the center of the creature
+        center_x = creature.x + creature.creature_size // 2
+        center_y = creature.y + creature.creature_size // 2
+
+        # Calculate the radius of the action zone based on action_zone_ratio
+        action_zone_radius = creature.genetics.action_zone_ratio * params.ACTION_ZONE_MAX  # Ensure a minimum radius
+
+        # Draw the action zone as a circle
+        pygame.draw.circle(screen, (255, 255, 255), (center_x, center_y), action_zone_radius,
+                           1)  # White circle with 1px border
+
     # Update display
     pygame.display.flip()
 
