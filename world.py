@@ -1,8 +1,11 @@
+import parameters
+
+
 class World:
     def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.world = [[0] * width for _ in range(height)]
+        self.width = width + parameters.CREATURE_SIZE_MAX
+        self.height = height + parameters.CREATURE_SIZE_MAX
+        self.world = [[0] * self.width for _ in range(self.height)]
         self.creatures = []
 
     def add_square(self, x, y, size):

@@ -105,8 +105,8 @@ def load_simulation_state(simulation_filename):
     print(f"Simulation state loaded from {simulation_filename}")
     return data["w"], params_module
 
-#save_simulation_state(w, params)
-w, params = load_simulation_state("saved_simulations/simulation_4.pkl")
+save_simulation_state(w, params)
+#w, params = load_simulation_state("saved_simulations/simulation_6.pkl")
 # Main loop
 step_count = 0
 while running:

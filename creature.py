@@ -3,31 +3,33 @@ import numpy as np
 import parameters as params
 from genetics import Genetics
 
+
 class Creature:
     def __init__(self, x, y, genetics=None):
         self.x = x
         self.y = y
         self.genetics = genetics if genetics is not None else Genetics()
         self.action_cost = self.calculate_action_cost()
-        self.energy = random.randint(1, self.genetics.max_energy)
+        self.energy = random.uniform(1, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY)  # Energy between 1 and energy_capacity * MAX_ENERGY_CAPACITY
         self.maturity_level = int(params.MATURITY_LEVEL_MIN + params.MATURITY_LEVEL_MAX * self.genetics.production_rate)
         self.lifespan = 0
         self.actions = [self.move_up, self.move_down, self.move_left, self.move_right, self.stay_still]
         self.brain = self.initialize_brain()
         self.mutation_rate = params.MUTATION_RATE
         self.color = self.calculate_color()
-        energy_capacity_ratio = self.genetics.max_energy / params.MAX_ENERGY_CAPACITY
-        self.creature_size = params.CREATURE_SIZE_MIN + int(min(params.CREATURE_SIZE_MAX * energy_capacity_ratio,params.CREATURE_SIZE_MAX))
+        self.creature_size = params.CREATURE_SIZE_MIN + int(
+            min(params.CREATURE_SIZE_MAX * self.genetics.energy_capacity, params.CREATURE_SIZE_MAX)
+        )
 
     def calculate_action_cost(self):
         """
-        Calculate the action cost based on production rate and max energy.
-        Higher production rate and max energy result in higher action cost.
+        Calculate the action cost based on production rate and energy capacity.
+        Higher production rate and energy capacity result in higher action cost.
         """
-        # Action cost is directly proportional to production rate and max energy
-        ratio1 = self.genetics.production_rate / params.CONSUMPTION_RATE_MAX
-        ratio2 = self.genetics.max_energy / params.MAX_ENERGY_CAPACITY
-        return (ratio1 + ratio2) * params.GENERAL_ENERGY_CONSUMPTION / 2 # 0.01 scaling factor to keep it reasonable
+        # Action cost is directly proportional to production rate and energy capacity
+        ratio1 = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
+        ratio2 = self.genetics.energy_capacity  # Already normalized between MIN/MAX and 1
+        return (ratio1 + ratio2) * params.GENERAL_ENERGY_CONSUMPTION / 2  # 0.01 scaling factor to keep it reasonable
 
     def initialize_brain(self):
         """Initialize a simple neural network."""
@@ -55,7 +57,8 @@ class Creature:
         inputs = [
             self.x / params.WIDTH,
             self.y / params.HEIGHT,
-            self.energy / self.genetics.max_energy,
+            self.energy,  # Normalized energy
+            self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY,
             self.lifespan / 100,
             self.action_cost
         ]
@@ -76,7 +79,7 @@ class Creature:
             # Apply general energy consumption and production
             self.energy -= params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consumption_rate
             self.energy += params.GENERAL_ENERGY_PRODUCTION * self.genetics.production_rate
-            self.energy = min(self.genetics.max_energy, max(0, self.energy))  # Keep energy within bounds
+            self.energy = min(self.energy, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY) # Keep energy within bounds
             self.lifespan += 1  # Increment lifespan
             action_index = self.calculate_action()
             self.perform_action(action_index, world)  # Perform the chosen action
