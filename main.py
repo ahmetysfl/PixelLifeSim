@@ -33,7 +33,7 @@ else:
     w, params = sim.load_simulation_state()
 # Pygame settings
 pygame.init()
-screen = pygame.display.set_mode((params.WIDTH, params.HEIGHT))
+screen = pygame.display.set_mode((w.width, w.height))
 pygame.display.set_caption("Life Simulation - Fixed Step")
 
 # Initial time
