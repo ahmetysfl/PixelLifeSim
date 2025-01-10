@@ -72,7 +72,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        control_panel.handle_events(event)  # Kontrol paneli olaylarını işle
+        control_panel.handle_events(event,w.creatures)  # Kontrol paneli olaylarını işle
 
     # Ekranı temizle
     screen.fill((0, 0, 0))

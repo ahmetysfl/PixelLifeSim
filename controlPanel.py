@@ -4,11 +4,12 @@ import pygame
 BUTTON_WIDTH = 100  # Butonların genişliği
 BUTTON_HEIGHT = 50  # Butonların yüksekliği
 BUTTON_MARGIN = 20  # Butonlar arasındaki boşluk
-BUTTON_FONT_SIZE = 24  # Buton yazılarının font boyutu (24 olarak güncellendi)
+BUTTON_FONT_SIZE = 24  # Buton yazılarının font boyutu
 BUTTON_TEXT_COLOR = (255, 255, 255)  # Buton yazılarının rengi (beyaz)
 PAUSE_BUTTON_COLOR = (0, 128, 255)  # Duraklat butonunun rengi (mavi)
 STOP_BUTTON_COLOR = (255, 0, 0)  # Durdur butonunun rengi (kırmızı)
 DIVIDER_LINE_COLOR = (255, 255, 255)  # Ayırıcı çizginin rengi (beyaz)
+INFO_TEXT_COLOR = (255, 255, 255)  # Bilgi metni rengi (beyaz)
 
 class ControlPanel:
     def __init__(self, screen_width, screen_height):
@@ -39,6 +40,9 @@ class ControlPanel:
         self.paused = False
         self.stopped = False
 
+        # Seçilen yaratığın bilgileri
+        self.selected_creature_info = None
+
     # Buton çizme fonksiyonu
     def draw_button(self, screen, text, rect, color):
         """
@@ -66,6 +70,35 @@ class ControlPanel:
         """
         return button_rect.collidepoint(mouse_pos)
 
+    # Yaratığa tıklanıp tıklanmadığını kontrol et
+    def check_creature_click(self, mouse_pos, creatures):
+        """
+        Fare tıklamasının bir yaratığa denk gelip gelmediğini kontrol eder.
+
+        :param mouse_pos: Fare imlecinin konumu (x, y).
+        :param creatures: Yaratık listesi.
+        :return: Tıklanan yaratık varsa onu döndürür, yoksa None.
+        """
+        for creature in creatures:
+            creature_rect = pygame.Rect(creature.x, creature.y, creature.creature_size, creature.creature_size)
+            if creature_rect.collidepoint(mouse_pos):
+                return creature
+        return None
+
+    # Bilgi metnini çiz
+    def draw_info_text(self, screen, text, x, y):
+        """
+        Bilgi metnini ekrana çizer.
+
+        :param screen: Pygame ekran yüzeyi.
+        :param text: Çizilecek metin.
+        :param x: Metnin x koordinatı.
+        :param y: Metnin y koordinatı.
+        """
+        font = pygame.font.Font(None, BUTTON_FONT_SIZE)
+        text_surface = font.render(text, True, INFO_TEXT_COLOR)
+        screen.blit(text_surface, (x, y))
+
     # Kontrol panelini çiz
     def draw(self, screen):
         """
@@ -87,12 +120,23 @@ class ControlPanel:
         self.draw_button(screen, pause_button_text, self.pause_button_rect, PAUSE_BUTTON_COLOR)
         self.draw_button(screen, "Durdur", self.stop_button_rect, STOP_BUTTON_COLOR)
 
+        # Seçilen yaratığın bilgilerini göster
+        if self.selected_creature_info:
+            info_text = f"X: {self.selected_creature_info.x}, Y: {self.selected_creature_info.y}"
+            self.draw_info_text(
+                screen,
+                info_text,
+                self.screen_width + BUTTON_MARGIN,  # X konumu
+                self.stop_button_rect.bottom + BUTTON_MARGIN  # Y konumu (durdur butonunun altında)
+            )
+
     # Olayları işle
-    def handle_events(self, event):
+    def handle_events(self, event, creatures):
         """
         Pygame olaylarını işler.
 
         :param event: Pygame olayı.
+        :param creatures: Yaratık listesi.
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
@@ -100,3 +144,7 @@ class ControlPanel:
                 self.paused = not self.paused  # Duraklatma durumunu tersine çevir
             elif self.is_button_clicked(mouse_pos, self.stop_button_rect):
                 self.stopped = True  # Simülasyonu durdur
+            elif self.paused:  # Oyun durmuşken yaratığa tıklanırsa
+                clicked_creature = self.check_creature_click(mouse_pos, creatures)
+                if clicked_creature:
+                    self.selected_creature_info = clicked_creature
