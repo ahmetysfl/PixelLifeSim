@@ -15,7 +15,7 @@ start_new_sim = True
 #start_new_sim = False
 
 if (start_new_sim):
-# Initialize the world
+    # Initialize the world
     w = World(params.WIDTH, params.HEIGHT)
     # Initialize creatures
     genetics_list = []
@@ -53,10 +53,34 @@ if (start_new_sim):
     sim.save_simulation_state(w, params)
 else:
     w, params = sim.load_simulation_state()
+
 # Pygame settings
 pygame.init()
-screen = pygame.display.set_mode((w.width, w.height))
-pygame.display.set_caption("Life Simulation - Fixed Step")
+# Pencere boyutunu artırın
+window_width = w.width + 300  # Simülasyon ekranı + kontrol paneli
+window_height = max(w.height, 200)  # Yükseklik, simülasyon ekranı veya kontrol paneli için yeterli olmalı
+screen = pygame.display.set_mode((window_width, window_height))
+pygame.display.set_caption("Life Simulation with Control Panel")
+
+# Butonların konum ve boyutları
+pause_button_rect = pygame.Rect(w.width + 50, 50, 100, 50)  # Duraklat butonu
+stop_button_rect = pygame.Rect(w.width + 50, 120, 100, 50)  # Durdur butonu
+
+# Duraklatma ve durdurma durumları
+paused = False
+stopped = False
+
+# Buton çizme fonksiyonu
+def draw_button(screen, text, rect, color):
+    pygame.draw.rect(screen, color, rect)
+    font = pygame.font.Font(None, 36)
+    text_surface = font.render(text, True, (255, 255, 255))
+    text_rect = text_surface.get_rect(center=rect.center)
+    screen.blit(text_surface, text_rect)
+
+# Buton tıklama kontrolü
+def is_button_clicked(mouse_pos, button_rect):
+    return button_rect.collidepoint(mouse_pos)
 
 # Initial time
 last_step_time = time.time()
@@ -75,58 +99,43 @@ running = True
 #graph_thread.start()
 
 while running:
-    screen.fill((0, 0, 0))  # Clear screen
-
-    # Handle events
+    # Kontrol ekranı olaylarını işle
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            if is_button_clicked(mouse_pos, pause_button_rect):
+                paused = not paused  # Duraklatma durumunu tersine çevir
+            elif is_button_clicked(mouse_pos, stop_button_rect):
+                stopped = True  # Simülasyonu durdur
 
-    # Fixed-step simulation
-    current_time = time.time()
-    if current_time - last_step_time >= params.FIXED_STEP_DURATION:
-        # Update creatures
-        rates = []
-        for creature in w.creatures:
-            creature.update(w)
-            rates.append(creature.genetics.production_rate)
+    # Ekranı temizle
+    screen.fill((0, 0, 0))
 
-        # Record data for plotting
-        steps.append(step_count)
-        total_creatures.append(len(w.creatures))
-        production_rates.append(rates)
-        step_count += 1
-        # Print computation time
-        computation_time = time.time() - last_step_time
-        #print(f"Step computation time: {computation_time:.4f}")
-        #print(f"Total creatures: {len(w.creatures)}")
-
-
-        if (len(w.creatures)) < 1:
-            break
-        last_step_time = current_time
-
-    # Draw creatures and their action zones
+    # Simülasyon ekranını çiz
     for creature in w.creatures:
-        # Draw the creature itself
-        pygame.draw.rect(screen, creature.color,
-                         (creature.x, creature.y, creature.creature_size, creature.creature_size))
+        pygame.draw.rect(screen, creature.color, (creature.x, creature.y, creature.creature_size, creature.creature_size))
 
-        # Calculate the center of the creature
-        center_x = creature.x + creature.creature_size // 2
-        center_y = creature.y + creature.creature_size // 2
+    # Kontrol panelini çiz
+    draw_button(screen, "Duraklat", pause_button_rect, (0, 128, 255))
+    draw_button(screen, "Durdur", stop_button_rect, (255, 0, 0))
 
-        # Calculate the radius of the action zone based on action_zone_ratio
-        action_zone_radius = creature.genetics.action_zone_ratio * params.ACTION_ZONE_MAX  # Ensure a minimum radius
-
-        # Draw the action zone as a circle
-        #pygame.draw.circle(screen, (255, 255, 255), (center_x, center_y), action_zone_radius, 1)  # White circle with 1px border
-
-    # Update display
     pygame.display.flip()
 
-# Wait for the graph thread to finish
-graph_thread.join()
+    # Simülasyon durdurulduysa döngüden çık
+    if stopped:
+        break
 
-# Quit Pygame
+    # Simülasyon duraklatılmadıysa ve durdurulmadıysa devam et
+    if not paused and not stopped:
+        current_time = time.time()
+        if current_time - last_step_time >= params.FIXED_STEP_DURATION:
+            # Canlıları güncelle
+            for creature in w.creatures:
+                creature.update(w)
+
+            last_step_time = current_time
+
+# Pygame'i kapat
 pygame.quit()
