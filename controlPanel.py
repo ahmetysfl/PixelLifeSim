@@ -120,15 +120,21 @@ class ControlPanel:
         self.draw_button(screen, pause_button_text, self.pause_button_rect, PAUSE_BUTTON_COLOR)
         self.draw_button(screen, "Durdur", self.stop_button_rect, STOP_BUTTON_COLOR)
 
-        # Seçilen yaratığın bilgilerini göster
+        # Seçilen yaratığın genetics bilgilerini göster
         if self.selected_creature_info:
-            info_text = f"X: {self.selected_creature_info.x}, Y: {self.selected_creature_info.y}"
-            self.draw_info_text(
-                screen,
-                info_text,
-                self.screen_width + BUTTON_MARGIN,  # X konumu
-                self.stop_button_rect.bottom + BUTTON_MARGIN  # Y konumu (durdur butonunun altında)
-            )
+            genetics = self.selected_creature_info.genetics
+            info_texts = [
+                f"Consumption Rate: {genetics.consumption_rate:.2f}",
+                f"Action Zone Ratio: {genetics.action_zone_ratio:.2f}",
+                f"Production Rate: {genetics.production_rate:.2f}",
+                f"Energy Capacity: {genetics.energy_capacity:.2f}",
+                f"Consume Others: {genetics.consume_other_creatures_ratio:.2f}"
+            ]
+            # Bilgileri durdur butonunun altına yaz
+            y_offset = self.stop_button_rect.bottom + BUTTON_MARGIN
+            for text in info_texts:
+                self.draw_info_text(screen, text, self.screen_width + BUTTON_MARGIN, y_offset)
+                y_offset += BUTTON_FONT_SIZE + 5  # Satırlar arası boşluk
 
     # Olayları işle
     def handle_events(self, event, creatures):
