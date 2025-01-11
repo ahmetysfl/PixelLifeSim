@@ -24,16 +24,27 @@ class Creature:
 
     def calculate_action_cost(self):
         """
-        Calculate the action cost based on production rate and energy capacity.
-        Higher production rate and energy capacity result in higher action cost.
+        Calculate the action cost based on genetic parameters and their respective weights.
+        Higher values of genetic parameters result in higher action cost.
         """
-        # Action cost is directly proportional to production rate and energy capacity
-        ratio1 = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
-        ratio2 = self.genetics.energy_capacity * 1.5   # Already normalized between MIN/MAX and 1
-        ratio3 = self.genetics.action_zone_ratio  # Already normalized between MIN/MAX and 1
-        ratio4 = self.genetics.consume_other_creatures_ratio  # Already normalized between MIN/MAX and 1
-        ratio5 = self.genetics.resource_share_ratio / params.RESOURCE_SHARE_RATIO_MAX  # Already normalized between MIN/MAX and 1
-        return (ratio1 + ratio2 + ratio3 + ratio4 + ratio5) * params.GENERAL_ENERGY_CONSUMPTION / 4  # 0.01 scaling factor to keep it reasonable
+        # Normalize genetic parameters
+        production_rate_norm = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
+        energy_capacity_norm = self.genetics.energy_capacity
+        action_zone_ratio_norm = self.genetics.action_zone_ratio
+        consume_other_creatures_ratio_norm = self.genetics.consume_other_creatures_ratio / params.CONSUME_OTHER_CREATURES_RATIO_MAX
+        resource_share_ratio_norm = self.genetics.resource_share_ratio / params.RESOURCE_SHARE_RATIO_MAX
+
+        # Calculate weighted sum of genetic parameters using action cost weights
+        weighted_sum = (
+                production_rate_norm * params.ACTION_COST_PRODUCTION_RATE_WEIGHT +
+                energy_capacity_norm * params.ACTION_COST_ENERGY_CAPACITY_WEIGHT +
+                action_zone_ratio_norm * params.ACTION_COST_ACTION_ZONE_WEIGHT +
+                consume_other_creatures_ratio_norm * params.ACTION_COST_CONSUME_OTHERS_WEIGHT +
+                resource_share_ratio_norm * params.ACTION_COST_RESOURCE_SHARE_WEIGHT
+        )
+
+        # Scale the weighted sum by the general energy consumption factor
+        return weighted_sum * params.ACTION_COST_GENERAL_RATIO
 
     def initialize_brain(self):
         """Initialize a neural network with two hidden layers."""

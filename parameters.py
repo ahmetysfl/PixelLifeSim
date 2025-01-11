@@ -37,6 +37,15 @@ ACTION_ZONE_MAX = CREATURE_SIZE_MAX * 6
 CONSUME_OTHER_CREATURES_RATIO_MAX = 1.0  # Maximum tüketme oranı
 CONSUME_OTHER_CREATURES_RATIO_MIN = 0.0  # Minimum tüketme oranı
 
+# Action Cost Calculation Weights
+ACTION_COST_GENERAL_RATIO = GENERAL_ENERGY_CONSUMPTION * 0.1  # Üretim oranının eylem maliyetine katkısı
+ACTION_COST_PRODUCTION_RATE_WEIGHT = 1  # Üretim oranının eylem maliyetine katkısı
+ACTION_COST_ENERGY_CAPACITY_WEIGHT = 2  # Enerji kapasitesinin eylem maliyetine katkısı
+ACTION_COST_ACTION_ZONE_WEIGHT = 1       # Eylem bölgesi oranının eylem maliyetine katkısı
+ACTION_COST_CONSUME_OTHERS_WEIGHT = 1.5   # Diğer canlıları tüketme oranının eylem maliyetine katkısı
+ACTION_COST_RESOURCE_SHARE_WEIGHT = 0.5  # Kaynak paylaşım oranının eylem maliyetine katkısı
+
+
 # Crowded Zone Parameters
 CROWDED_ZONE_THRESHOLD = 10  # Kalabalık bölge için minimum yaratık sayısı
 CROWDED_ZONE_RADIUS = CREATURE_SIZE_MAX * 4  # Kalabalık bölge yarıçapı
