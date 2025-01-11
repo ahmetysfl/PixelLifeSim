@@ -14,7 +14,7 @@ class Creature:
         self.maturity_level = int(params.MATURITY_LEVEL_MIN + params.MATURITY_LEVEL_MAX * self.genetics.production_rate)
         self.lifespan = 0
         self.crowded_calculation_ratio = 1
-        self.actions = [self.move_up, self.move_down, self.move_left, self.move_right, self.stay_still, self.consume_other_creature]
+        self.actions = [self.move_up, self.move_down, self.move_left, self.move_right, self.stay_still, self.consume_other_creatures, self.share_resource_to_other_creatures]
         self.brain = self.initialize_brain()
         self.mutation_rate = params.MUTATION_RATE
         self.color = self.calculate_color()
@@ -29,10 +29,11 @@ class Creature:
         """
         # Action cost is directly proportional to production rate and energy capacity
         ratio1 = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
-        ratio2 = self.genetics.energy_capacity  # Already normalized between MIN/MAX and 1
+        ratio2 = self.genetics.energy_capacity * 1.5   # Already normalized between MIN/MAX and 1
         ratio3 = self.genetics.action_zone_ratio  # Already normalized between MIN/MAX and 1
         ratio4 = self.genetics.consume_other_creatures_ratio  # Already normalized between MIN/MAX and 1
-        return (ratio1 + ratio2 + ratio3 + ratio4) * params.GENERAL_ENERGY_CONSUMPTION / 4  # 0.01 scaling factor to keep it reasonable
+        ratio5 = self.genetics.resource_share_ratio / params.RESOURCE_SHARE_RATIO_MAX  # Already normalized between MIN/MAX and 1
+        return (ratio1 + ratio2 + ratio3 + ratio4 + ratio5) * params.GENERAL_ENERGY_CONSUMPTION / 4  # 0.01 scaling factor to keep it reasonable
 
     def initialize_brain(self):
         """Initialize a neural network with two hidden layers."""
@@ -76,7 +77,6 @@ class Creature:
             # Update the weights with the random noise
             self.brain[layer] += random_noise
 
-
     def get_inputs(self):
         """Return normalized inputs for the neural network."""
         inputs = [
@@ -88,7 +88,8 @@ class Creature:
             self.genetics.consume_other_creatures_ratio,
             self.genetics.consumption_rate,
             self.crowded_calculation_ratio,
-            self.action_cost
+            self.action_cost,
+            self.genetics.resource_share_ratio
         ]
         return np.array(inputs)
 
@@ -97,30 +98,41 @@ class Creature:
         Calculate the color of the creature based on its genetic parameters.
         - High production rate: Brighter green.
         - High consumption rate or tendency to consume other creatures: Brighter red.
+        - High resource share ratio: Brighter blue.
         - Balanced traits: Bright yellow, with intensity based on the average of traits.
         """
         # Normalize genetic parameters to a range of 0-1
         production_rate_norm = self.genetics.production_rate / params.PRODUCTION_RATE_MAX
         consumption_rate_norm = self.genetics.consumption_rate / params.CONSUMPTION_RATE_MAX
         consume_other_creatures_ratio_norm = self.genetics.consume_other_creatures_ratio / params.CONSUME_OTHER_CREATURES_RATIO_MAX
+        resource_share_ratio_norm = self.genetics.resource_share_ratio / params.RESOURCE_SHARE_RATIO_MAX
 
         # Calculate the dominant trait and its intensity
-        if production_rate_norm > max(consumption_rate_norm, consume_other_creatures_ratio_norm) + 0.2:
+        if production_rate_norm > max(consumption_rate_norm, consume_other_creatures_ratio_norm,
+                                      resource_share_ratio_norm) + 0.2:
             # Green is dominant, intensity based on production rate
             green_intensity = int(255 * production_rate_norm)
             return (0, green_intensity, 0)  # Green with variable intensity
-        elif consume_other_creatures_ratio_norm > max(production_rate_norm, consumption_rate_norm) + 0.2:
+        elif consume_other_creatures_ratio_norm > max(production_rate_norm, consumption_rate_norm,
+                                                      resource_share_ratio_norm) + 0.2:
             # Red is dominant, intensity based on consume_other_creatures_ratio
             red_intensity = int(255 * consume_other_creatures_ratio_norm)
             return (red_intensity, 0, 0)  # Red with variable intensity
-        elif consumption_rate_norm > max(production_rate_norm, consume_other_creatures_ratio_norm) + 0.2:
+        elif consumption_rate_norm > max(production_rate_norm, consume_other_creatures_ratio_norm,
+                                         resource_share_ratio_norm) + 0.2:
             # Red is dominant, intensity based on consumption rate
             red_intensity = int(255 * consumption_rate_norm)
             return (red_intensity, 0, 0)  # Red with variable intensity
+        elif resource_share_ratio_norm > max(production_rate_norm, consumption_rate_norm,
+                                             consume_other_creatures_ratio_norm) + 0.2:
+            # Blue is dominant, intensity based on resource_share_ratio
+            blue_intensity = int(255 * resource_share_ratio_norm)
+            return (0, 0, blue_intensity)  # Blue with variable intensity
         else:
             # Balanced traits: Bright yellow, intensity based on the average of traits
             average_intensity = int(
-                255 * (production_rate_norm + consumption_rate_norm + consume_other_creatures_ratio_norm) / 3)
+                255 * (
+                            production_rate_norm + consumption_rate_norm + consume_other_creatures_ratio_norm + resource_share_ratio_norm) / 4)
             return (average_intensity, average_intensity, 0)  # Bright yellow with variable intensity
 
     def update(self, world):
@@ -149,7 +161,6 @@ class Creature:
             self.energy -= self.action_cost
             # Perform the action
             self.actions[action_index](world)
-            self.random_update_brain(params.BRAIN_LEARNING_RATE)
 
     def reproduction(self, world):
         """Reproduce if conditions are met."""
@@ -231,7 +242,7 @@ class Creature:
     def stay_still(self, world):
         pass  # Do nothing
 
-    def consume_other_creature(self, world):
+    def consume_other_creatures(self, world):
         creatures_in_zone = world.get_creatures_in_action_zone(self)
         for other_creature in creatures_in_zone:
             energy_to_eat = params.GENERAL_ENERGY_CONSUMPTION * (self.genetics.consumption_rate + 0.5) * self.genetics.consume_other_creatures_ratio
@@ -239,3 +250,23 @@ class Creature:
             self.energy += energy_to_eat
         self.perform_action_cost()
 
+    def share_resource_to_other_creatures(self, world):
+        """
+        Share energy with other creatures in the action zone based on resource_share_ratio.
+        """
+        # Get creatures in the action zone
+        creatures_in_zone = world.get_creatures_in_action_zone(self)
+
+        # Calculate the amount of energy to share
+        energy_to_share = self.energy * self.genetics.resource_share_ratio
+
+        # Distribute the energy equally among all creatures in the zone (including self)
+        num_creatures = len(creatures_in_zone)
+        if num_creatures > 0:
+            energy_per_creature = energy_to_share / num_creatures
+            for other_creature in creatures_in_zone:
+                other_creature.energy += energy_per_creature
+                self.energy -= energy_per_creature
+
+        # Subtract action cost
+        self.perform_action_cost()
