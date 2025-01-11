@@ -15,6 +15,7 @@ class Creature:
         self.genetic_cost = self.calculate_genetic_cost()
         self.sensed_color = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         self.energy = random.uniform(1, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY)  # Energy between 1 and energy_capacity * MAX_ENERGY_CAPACITY
+        self.last_energy = self.energy
         self.maturity_level = int(params.MATURITY_LEVEL_MIN + params.MATURITY_LEVEL_MAX * self.genetics.production_rate)
         self.lifespan = 0
         self.crowded_calculation_ratio = 1
@@ -38,6 +39,7 @@ class Creature:
         action_zone_ratio_norm = self.genetics.action_zone_ratio
         consume_other_creatures_ratio_norm = self.genetics.consume_other_creatures_ratio / params.CONSUME_OTHER_CREATURES_RATIO_MAX
         resource_share_ratio_norm = self.genetics.resource_share_ratio / params.RESOURCE_SHARE_RATIO_MAX
+        sense_radius_norm = self.genetics.sense_radius / params.SENSE_RADIUS_MAX  # Yeni eklenen değer
 
         # Calculate weighted sum of genetic parameters using action cost weights
         weighted_sum = (
@@ -45,7 +47,8 @@ class Creature:
                 energy_capacity_norm * params.ACTION_COST_ENERGY_CAPACITY_WEIGHT +
                 action_zone_ratio_norm * params.ACTION_COST_ACTION_ZONE_WEIGHT +
                 consume_other_creatures_ratio_norm * params.ACTION_COST_CONSUME_OTHERS_WEIGHT +
-                resource_share_ratio_norm * params.ACTION_COST_RESOURCE_SHARE_WEIGHT
+                resource_share_ratio_norm * params.ACTION_COST_RESOURCE_SHARE_WEIGHT +
+                sense_radius_norm * params.ACTION_COST_SENSE_RADIUS_WEIGHT  # Yeni eklenen değer
         )
 
         # Scale the weighted sum by the general energy consumption factor
@@ -57,6 +60,7 @@ class Creature:
         genetic_cost += self.genetics.energy_capacity * self.genetics.action_zone_ratio
         genetic_cost += self.genetics.resource_share_ratio * self.genetics.consume_other_creatures_ratio
         return genetic_cost * params.GENERAL_GENETIC_COST
+
     def initialize_brain(self):
         """Initialize a neural network with two hidden layers."""
         input_size = len(self.get_inputs())
@@ -103,6 +107,7 @@ class Creature:
         """Return normalized inputs for the neural network."""
         inputs = [
             self.energy / (self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY),  # Normalized energy
+            self.last_energy / (self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY),  # Normalized energy
             self.lifespan / params.AGING_LEVEL_STARTS,
             self.genetics.production_rate,
             self.genetics.consume_other_creatures_ratio,
@@ -177,6 +182,7 @@ class Creature:
             self.lifespan = -1  # Mark as dead if energy is 0
             world.delete_creature(self)
 
+        self.last_energy = self.energy
     def perform_action(self, action_index, world):
         """Perform the action corresponding to the given index and subtract action cost."""
         if 0 <= action_index < len(self.actions):

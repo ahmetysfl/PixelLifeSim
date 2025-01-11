@@ -51,7 +51,7 @@ ACTION_COST_ENERGY_CAPACITY_WEIGHT = 2  # Enerji kapasitesinin eylem maliyetine 
 ACTION_COST_ACTION_ZONE_WEIGHT = 1       # Eylem bölgesi oranının eylem maliyetine katkısı
 ACTION_COST_CONSUME_OTHERS_WEIGHT = 1.5   # Diğer canlıları tüketme oranının eylem maliyetine katkısı
 ACTION_COST_RESOURCE_SHARE_WEIGHT = 0.5  # Kaynak paylaşım oranının eylem maliyetine katkısı
-
+ACTION_COST_SENSE_RADIUS_WEIGHT = 0.25  # Yeni eklenen ağırlık
 
 # Crowded Zone Parameters
 CROWDED_ZONE_THRESHOLD = 20  # Kalabalık bölge için minimum yaratık sayısı
