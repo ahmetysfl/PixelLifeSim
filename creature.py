@@ -10,6 +10,7 @@ class Creature:
         self.y = y
         self.genetics = genetics if genetics is not None else Genetics()
         self.action_cost = self.calculate_action_cost()
+        self.genetic_cost = self.calculate_genetic_cost()
         self.energy = random.uniform(1, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY)  # Energy between 1 and energy_capacity * MAX_ENERGY_CAPACITY
         self.maturity_level = int(params.MATURITY_LEVEL_MIN + params.MATURITY_LEVEL_MAX * self.genetics.production_rate)
         self.lifespan = 0
@@ -46,6 +47,12 @@ class Creature:
         # Scale the weighted sum by the general energy consumption factor
         return weighted_sum * params.ACTION_COST_GENERAL_RATIO
 
+    def calculate_genetic_cost(self):
+        genetic_cost = 0
+        genetic_cost += self.genetics.production_rate * self.genetics.consumption_rate
+        genetic_cost += self.genetics.energy_capacity * self.genetics.action_zone_ratio
+        genetic_cost += self.genetics.resource_share_ratio * self.genetics.consume_other_creatures_ratio
+        return genetic_cost * params.GENERAL_GENETIC_COST
     def initialize_brain(self):
         """Initialize a neural network with two hidden layers."""
         input_size = len(self.get_inputs())
@@ -153,6 +160,7 @@ class Creature:
             self.energy -= params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consumption_rate
             # Aging effect
             self.energy -= params.GENERAL_ENERGY_CONSUMPTION * (self.lifespan / params.AGING_LEVEL_STARTS)
+            self.energy -= self.genetic_cost
             self.crowded_calculation_ratio = min(1,params.CROWDED_ZONE_THRESHOLD / world.get_crowded_zone_count(self))
             self.energy += params.GENERAL_ENERGY_PRODUCTION * self.genetics.production_rate * self.crowded_calculation_ratio
             self.energy = min(self.energy, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY) # Keep energy within bounds
@@ -204,6 +212,7 @@ class Creature:
                     self.genetics.mutate(self.mutation_rate)
                     # Apply mutation
                     new_genetics = self.genetics.create_new_genetics(self.mutation_rate)
+                    self.calculate_genetic_cost()
 
                     # Create new creature
                     new_creature = Creature(new_x, new_y, genetics=new_genetics)

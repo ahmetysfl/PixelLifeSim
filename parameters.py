@@ -5,6 +5,8 @@ MAX_ENERGY_CAPACITY = 200
 MIN_ENERGY_CAPACITY = 1
 GENERAL_ENERGY_CONSUMPTION = 8
 GENERAL_ENERGY_PRODUCTION = 10
+GENERAL_GENETIC_COST = 0.4
+
 CREATURE_SIZE_MAX = 10  # Creature size
 CREATURE_SIZE_MIN = 5  # Creature size
 MUTATION_RATE = 0.1  # Mutation rate
@@ -47,7 +49,7 @@ ACTION_COST_RESOURCE_SHARE_WEIGHT = 0.5  # Kaynak paylaşım oranının eylem ma
 
 
 # Crowded Zone Parameters
-CROWDED_ZONE_THRESHOLD = 8  # Kalabalık bölge için minimum yaratık sayısı
+CROWDED_ZONE_THRESHOLD = 20  # Kalabalık bölge için minimum yaratık sayısı
 CROWDED_ZONE_RADIUS = CREATURE_SIZE_MAX * 5  # Kalabalık bölge yarıçapı
 
 # Screen dimensions
