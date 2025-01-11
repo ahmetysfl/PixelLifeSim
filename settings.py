@@ -10,12 +10,13 @@ BUTTON_TEXTS = {
 # Bilgi metinleri
 # Bilgi metinleri
 INFO_TEXTS = {
-    "consumption_rate":     "Consumption Rate : {:.2f}",
-    "action_zone_ratio":    "Action Zone Ratio: {:.2f}",
-    "production_rate":      "Production Rate  : {:.2f}",
-    "energy_capacity":      "Energy Capacity  : {:.2f}",
-    "consume_others":       "Consume Others   : {:.2f}",
-    "resource_share":       "Resource Share   : {:.2f}"  # Yeni eklenen değer
+    "consumption_rate": "Consumption Rate: {:.2f}",
+    "action_zone_ratio": "Action Zone Ratio: {:.2f}",
+    "production_rate": "Production Rate: {:.2f}",
+    "energy_capacity": "Energy Capacity: {:.2f}",
+    "consume_others": "Consume Others Ratio: {:.2f}",
+    "resource_share": "Resource Share Ratio: {:.2f}",
+    "sense_radius": "Sense Radius: {:.2f}"  # Yeni eklenen değer
 }
 
 # Diğer ayarlar

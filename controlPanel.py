@@ -123,7 +123,8 @@ class ControlPanel:
                 INFO_TEXTS["production_rate"].format(genetics.production_rate),
                 INFO_TEXTS["energy_capacity"].format(genetics.energy_capacity),
                 INFO_TEXTS["consume_others"].format(genetics.consume_other_creatures_ratio),
-                INFO_TEXTS["resource_share"].format(genetics.resource_share_ratio)  # Yeni eklenen değer
+                INFO_TEXTS["resource_share"].format(genetics.resource_share_ratio),
+                INFO_TEXTS["sense_radius"].format(genetics.sense_radius)  # Yeni eklenen değer
             ]
             # Bilgileri durdur butonunun altına yaz
             y_offset = self.stop_button_rect.bottom + BUTTON_MARGIN

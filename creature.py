@@ -318,7 +318,7 @@ class Creature:
 
     def sense_color_in_direction(self, world, dx, dy):
         """Sense in a specific direction and return the color of the first creature encountered within the sense radius."""
-        for i in range(1, int(self.genetics.sense_radius) + 1):
+        for i in range(1, int(self.genetics.sense_radius*params.SENSE_RADIUS_GENERAL) + 1):
             x = self.x + dx * i
             y = self.y + dy * i
             if x > world.width or y > world.height:
