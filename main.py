@@ -10,7 +10,7 @@ from controlPanel import ControlPanel  # Kontrol paneli sınıfını içe aktar
 
 start_new_sim = True
 use_saved_brains = True
-#use_saved_brains = False
+use_saved_brains = False
 #start_new_sim = False
 
 start_py_game = True

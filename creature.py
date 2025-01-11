@@ -1,5 +1,7 @@
 import random
 import numpy as np
+import selenium.common.exceptions
+
 import parameters as params
 from genetics import Genetics
 
@@ -11,7 +13,7 @@ class Creature:
         self.genetics = genetics if genetics is not None else Genetics()
         self.action_cost = self.calculate_action_cost()
         self.genetic_cost = self.calculate_genetic_cost()
-        self.sensed_color = []
+        self.sensed_color = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         self.energy = random.uniform(1, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY)  # Energy between 1 and energy_capacity * MAX_ENERGY_CAPACITY
         self.maturity_level = int(params.MATURITY_LEVEL_MIN + params.MATURITY_LEVEL_MAX * self.genetics.production_rate)
         self.lifespan = 0
@@ -100,7 +102,7 @@ class Creature:
     def get_inputs(self):
         """Return normalized inputs for the neural network."""
         inputs = [
-            self.energy / self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY,  # Normalized energy
+            self.energy / (self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY),  # Normalized energy
             self.lifespan / params.AGING_LEVEL_STARTS,
             self.genetics.production_rate,
             self.genetics.consume_other_creatures_ratio,
@@ -109,7 +111,7 @@ class Creature:
             self.action_cost,
             self.genetics.resource_share_ratio
         ]
-        inputs.append(self.sensed_color)
+        inputs += self.sensed_color
         return np.array(inputs)
 
     def calculate_color(self):
@@ -306,19 +308,20 @@ class Creature:
             (-1, -1)  # Northwest
         ]
 
-        sensed_colors = []
+        i = 0
         for dx, dy in directions:
             color = self.sense_color_in_direction(world, dx, dy)
-            sensed_colors.append(color)
-
-        self.sensed_color=sensed_colors
+            self.sensed_color[i] = color[0] / 255
+            self.sensed_color[i+1] = color[1] / 255
+            self.sensed_color[i+2] = color[2] / 255
+            i +=1
 
     def sense_color_in_direction(self, world, dx, dy):
         """Sense in a specific direction and return the color of the first creature encountered within the sense radius."""
         for i in range(1, int(self.genetics.sense_radius) + 1):
             x = self.x + dx * i
             y = self.y + dy * i
-            if not world.is_within_bounds(x, y):
+            if x > world.width or y > world.height:
                 break
             creature = world.get_creature_at(x, y)
             if creature is not None:
