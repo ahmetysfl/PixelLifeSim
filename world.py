@@ -125,3 +125,10 @@ class World:
                 crowded_zone_count += 1
 
         return crowded_zone_count
+
+    def get_creature_at(self, x, y):
+        """Return the creature at the given coordinates."""
+        for creature in self.creatures:
+            if creature.x == x and creature.y == y:
+                return creature
+        return None

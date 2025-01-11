@@ -11,6 +11,7 @@ class Creature:
         self.genetics = genetics if genetics is not None else Genetics()
         self.action_cost = self.calculate_action_cost()
         self.genetic_cost = self.calculate_genetic_cost()
+        self.sensed_color = []
         self.energy = random.uniform(1, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY)  # Energy between 1 and energy_capacity * MAX_ENERGY_CAPACITY
         self.maturity_level = int(params.MATURITY_LEVEL_MIN + params.MATURITY_LEVEL_MAX * self.genetics.production_rate)
         self.lifespan = 0
@@ -19,6 +20,7 @@ class Creature:
         self.brain = self.initialize_brain()
         self.mutation_rate = params.MUTATION_RATE
         self.color = self.calculate_color()
+
         self.creature_size = params.CREATURE_SIZE_MIN + int(
             min(params.CREATURE_SIZE_MAX * self.genetics.energy_capacity, params.CREATURE_SIZE_MAX)
         )
@@ -98,8 +100,6 @@ class Creature:
     def get_inputs(self):
         """Return normalized inputs for the neural network."""
         inputs = [
-            self.x / params.WIDTH,
-            self.y / params.HEIGHT,
             self.energy / self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY,  # Normalized energy
             self.lifespan / params.AGING_LEVEL_STARTS,
             self.genetics.production_rate,
@@ -109,6 +109,7 @@ class Creature:
             self.action_cost,
             self.genetics.resource_share_ratio
         ]
+        inputs.append(self.sensed_color)
         return np.array(inputs)
 
     def calculate_color(self):
@@ -167,6 +168,7 @@ class Creature:
             self.lifespan += 1  # Increment lifespan
             self.calculate_action_cost()
             action_index = self.calculate_action()
+            self.sense_8_directions(world)
             self.perform_action(action_index, world)  # Perform the chosen action
             self.reproduction(world)
         else:
@@ -290,3 +292,35 @@ class Creature:
 
         # Subtract action cost
         self.perform_action_cost()
+
+    def sense_8_directions(self, world):
+        """Sense in 8 directions (N, NE, E, SE, S, SW, W, NW) and return a list of sensed colors."""
+        directions = [
+            (0, -1),  # North
+            (1, -1),  # Northeast
+            (1, 0),  # East
+            (1, 1),  # Southeast
+            (0, 1),  # South
+            (-1, 1),  # Southwest
+            (-1, 0),  # West
+            (-1, -1)  # Northwest
+        ]
+
+        sensed_colors = []
+        for dx, dy in directions:
+            color = self.sense_color_in_direction(world, dx, dy)
+            sensed_colors.append(color)
+
+        self.sensed_color=sensed_colors
+
+    def sense_color_in_direction(self, world, dx, dy):
+        """Sense in a specific direction and return the color of the first creature encountered within the sense radius."""
+        for i in range(1, int(self.genetics.sense_radius) + 1):
+            x = self.x + dx * i
+            y = self.y + dy * i
+            if not world.is_within_bounds(x, y):
+                break
+            creature = world.get_creature_at(x, y)
+            if creature is not None:
+                return creature.color  # Return the color of the sensed creature
+        return  [0,0,0]  # Return None if no creature is sensed

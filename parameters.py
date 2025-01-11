@@ -33,11 +33,15 @@ RESOURCE_SHARE_RATIO_MIN = 0.0  # Minimum resource share ratio
 # Action Zone Ratio Parameters
 ACTION_ZONE_RATIO_MAX = 1
 ACTION_ZONE_RATIO_MIN = 0
-ACTION_ZONE_MAX = CREATURE_SIZE_MAX * 6
+ACTION_ZONE_MAX = CREATURE_SIZE_MAX * 4
 
 # Yeni parametreler
 CONSUME_OTHER_CREATURES_RATIO_MAX = 1.0  # Maximum tüketme oranı
 CONSUME_OTHER_CREATURES_RATIO_MIN = 0.0  # Minimum tüketme oranı
+
+# Sense Radius Parameters
+SENSE_RADIUS_MIN = 0  # Minimum sense radius
+SENSE_RADIUS_MAX = CREATURE_SIZE_MAX * 8  # Maximum sense radius
 
 # Action Cost Calculation Weights
 ACTION_COST_GENERAL_RATIO = GENERAL_ENERGY_CONSUMPTION * 0.1  # Üretim oranının eylem maliyetine katkısı

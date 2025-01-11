@@ -3,13 +3,19 @@ import parameters as params
 
 
 class Genetics:
-    def __init__(self, energy_capacity=None, consumption_rate=None, production_rate=None, action_zone_ratio=None, consume_other_creatures_ratio=None, resource_share_ratio=None):
+    def __init__(self, energy_capacity=None, consumption_rate=None, production_rate=None, action_zone_ratio=None,
+                 consume_other_creatures_ratio=None, resource_share_ratio=None, sense_radius=None):
         self.energy_capacity = energy_capacity if energy_capacity is not None else self.initialize_energy_capacity()
         self.consumption_rate = consumption_rate if consumption_rate is not None else self.initialize_consumption_rate()
         self.production_rate = production_rate if production_rate is not None else self.initialize_production_rate()
         self.action_zone_ratio = action_zone_ratio if action_zone_ratio is not None else self.initialize_action_zone_ratio()
         self.consume_other_creatures_ratio = consume_other_creatures_ratio if consume_other_creatures_ratio is not None else self.initialize_consume_other_creatures_ratio()
         self.resource_share_ratio = resource_share_ratio if resource_share_ratio is not None else self.initialize_resource_share_ratio()
+        self.sense_radius = sense_radius if sense_radius is not None else self.initialize_sense_radius()
+
+    def initialize_sense_radius(self):
+        """Initialize sense radius with a random value between SENSE_RADIUS_MIN and SENSE_RADIUS_MAX."""
+        return random.uniform(params.SENSE_RADIUS_MIN, params.SENSE_RADIUS_MAX)
 
     def initialize_energy_capacity(self):
         """Initialize energy capacity with a random value between MIN_ENERGY_CAPACITY/MAX_ENERGY_CAPACITY and 1."""
@@ -43,6 +49,7 @@ class Genetics:
         self.action_zone_ratio *= (1 + random.uniform(-mutation_rate, mutation_rate))
         self.consume_other_creatures_ratio *= (1 + random.uniform(-mutation_rate, mutation_rate))
         self.resource_share_ratio *= (1 + random.uniform(-mutation_rate, mutation_rate))
+        self.sense_radius *= (1 + random.uniform(-mutation_rate, mutation_rate))
 
         # Ensure values stay within bounds
         self.energy_capacity = max(params.MIN_ENERGY_CAPACITY / params.MAX_ENERGY_CAPACITY,
@@ -50,9 +57,14 @@ class Genetics:
         self.consumption_rate = max(params.CONSUMPTION_RATE_MIN,
                                     min(params.CONSUMPTION_RATE_MAX, self.consumption_rate))
         self.production_rate = max(params.PRODUCTION_RATE_MIN, min(params.PRODUCTION_RATE_MAX, self.production_rate))
-        self.action_zone_ratio = max(params.ACTION_ZONE_RATIO_MIN, min(params.ACTION_ZONE_RATIO_MAX, self.action_zone_ratio))
-        self.consume_other_creatures_ratio = max(params.CONSUME_OTHER_CREATURES_RATIO_MIN, min(params.CONSUME_OTHER_CREATURES_RATIO_MAX, self.consume_other_creatures_ratio))
-        self.resource_share_ratio = max(params.RESOURCE_SHARE_RATIO_MIN, min(params.RESOURCE_SHARE_RATIO_MAX, self.resource_share_ratio))
+        self.action_zone_ratio = max(params.ACTION_ZONE_RATIO_MIN,
+                                     min(params.ACTION_ZONE_RATIO_MAX, self.action_zone_ratio))
+        self.consume_other_creatures_ratio = max(params.CONSUME_OTHER_CREATURES_RATIO_MIN,
+                                                 min(params.CONSUME_OTHER_CREATURES_RATIO_MAX,
+                                                     self.consume_other_creatures_ratio))
+        self.resource_share_ratio = max(params.RESOURCE_SHARE_RATIO_MIN,
+                                        min(params.RESOURCE_SHARE_RATIO_MAX, self.resource_share_ratio))
+        self.sense_radius = max(params.SENSE_RADIUS_MIN, min(params.SENSE_RADIUS_MAX, self.sense_radius))
 
     def create_new_genetics(self, mutation_rate=0.1):
         """
