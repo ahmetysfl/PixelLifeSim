@@ -54,7 +54,7 @@ else:
 # Pygame settings
 pygame.init()
 # Pencere boyutunu artırın
-window_width = w.width + 200  # Simülasyon ekranı + kontrol paneli
+window_width = w.width + 250  # Simülasyon ekranı + kontrol paneli
 window_height = max(w.height, 100)  # Yükseklik, simülasyon ekranı veya kontrol paneli için yeterli olmalı
 screen = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("Life Simulation with Control Panel")

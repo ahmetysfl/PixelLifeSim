@@ -35,12 +35,15 @@ class Creature:
         return (ratio1 + ratio2 + ratio3 + ratio4) * params.GENERAL_ENERGY_CONSUMPTION / 4  # 0.01 scaling factor to keep it reasonable
 
     def initialize_brain(self):
-        """Initialize a simple neural network."""
+        """Initialize a neural network with two hidden layers."""
         input_size = len(self.get_inputs())
-        hidden_layer_size = 8
+        hidden_layer1_size = params.BRAIN_LAYER1_SIZE  # İlk gizli katmanın boyutu
+        hidden_layer2_size = params.BRAIN_LAYER2_SIZE  # İkinci gizli katmanın boyutu
+
         brain = {
-            'input_to_hidden': np.random.rand(input_size, hidden_layer_size),
-            'hidden_to_output': np.random.rand(hidden_layer_size, len(self.actions))
+            'input_to_hidden1': np.random.rand(input_size, hidden_layer1_size),
+            'hidden1_to_hidden2': np.random.rand(hidden_layer1_size, hidden_layer2_size),
+            'hidden2_to_output': np.random.rand(hidden_layer2_size, len(self.actions))
         }
         return brain
 
@@ -48,10 +51,18 @@ class Creature:
         self.energy -= self.action_cost
 
     def calculate_action(self):
-        """Determine an action using the neural network."""
+        """Determine an action using the neural network with two hidden layers."""
         inputs = self.get_inputs()
-        hidden_layer_output = np.tanh(np.dot(inputs, self.brain['input_to_hidden']))
-        outputs = np.dot(hidden_layer_output, self.brain['hidden_to_output'])
+
+        # İlk gizli katmanın çıktısını hesapla
+        hidden_layer1_output = np.tanh(np.dot(inputs, self.brain['input_to_hidden1']))
+
+        # İkinci gizli katmanın çıktısını hesapla
+        hidden_layer2_output = np.tanh(np.dot(hidden_layer1_output, self.brain['hidden1_to_hidden2']))
+
+        # Çıktı katmanının çıktısını hesapla
+        outputs = np.dot(hidden_layer2_output, self.brain['hidden2_to_output'])
+
         return np.argmax(outputs)
 
     def get_inputs(self):
@@ -118,7 +129,6 @@ class Creature:
         else:
             self.lifespan = -1  # Mark as dead if energy is 0
             world.delete_creature(self)
- # Update color based on energy
 
     def perform_action(self, action_index, world):
         """Perform the action corresponding to the given index and subtract action cost."""
@@ -200,7 +210,7 @@ class Creature:
     def consume_other_creature(self, world):
         creatures_in_zone = world.get_creatures_in_action_zone(self)
         for other_creature in creatures_in_zone:
-            energy_to_eat = params.GENERAL_ENERGY_CONSUMPTION * self.genetics.consume_other_creatures_ratio
+            energy_to_eat = params.GENERAL_ENERGY_CONSUMPTION * (self.genetics.consumption_rate + 0.5) * self.genetics.consume_other_creatures_ratio
             other_creature.energy -= energy_to_eat
             self.energy += energy_to_eat
         self.perform_action_cost()

@@ -1,15 +1,5 @@
 import pygame
-
-# Global ayarlar
-BUTTON_WIDTH = 100  # Butonların genişliği
-BUTTON_HEIGHT = 50  # Butonların yüksekliği
-BUTTON_MARGIN = 20  # Butonlar arasındaki boşluk
-BUTTON_FONT_SIZE = 24  # Buton yazılarının font boyutu
-BUTTON_TEXT_COLOR = (255, 255, 255)  # Buton yazılarının rengi (beyaz)
-PAUSE_BUTTON_COLOR = (0, 128, 255)  # Duraklat butonunun rengi (mavi)
-STOP_BUTTON_COLOR = (255, 0, 0)  # Durdur butonunun rengi (kırmızı)
-DIVIDER_LINE_COLOR = (255, 255, 255)  # Ayırıcı çizginin rengi (beyaz)
-INFO_TEXT_COLOR = (255, 255, 255)  # Bilgi metni rengi (beyaz)
+from settings import BUTTON_TEXTS, INFO_TEXTS, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN, BUTTON_FONT_SIZE, INFO_FONT_SIZE, BUTTON_TEXT_COLOR, PAUSE_BUTTON_COLOR, STOP_BUTTON_COLOR, DIVIDER_LINE_COLOR, INFO_TEXT_COLOR
 
 class ControlPanel:
     def __init__(self, screen_width, screen_height):
@@ -42,6 +32,9 @@ class ControlPanel:
 
         # Seçilen yaratığın bilgileri
         self.selected_creature_info = None
+
+        # Courier New yazı tipi (bold olarak ayarlandı)
+        self.monospace_font = pygame.font.SysFont("couriernew", INFO_FONT_SIZE, bold=True)
 
     # Buton çizme fonksiyonu
     def draw_button(self, screen, text, rect, color):
@@ -95,8 +88,7 @@ class ControlPanel:
         :param x: Metnin x koordinatı.
         :param y: Metnin y koordinatı.
         """
-        font = pygame.font.Font(None, BUTTON_FONT_SIZE)
-        text_surface = font.render(text, True, INFO_TEXT_COLOR)
+        text_surface = self.monospace_font.render(text, True, INFO_TEXT_COLOR)
         screen.blit(text_surface, (x, y))
 
     # Kontrol panelini çiz
@@ -116,25 +108,25 @@ class ControlPanel:
         )
 
         # Duraklat butonunun metnini oyunun durumuna göre değiştir
-        pause_button_text = "Devam Et" if self.paused else "Duraklat"
+        pause_button_text = BUTTON_TEXTS["resume"] if self.paused else BUTTON_TEXTS["pause"]
         self.draw_button(screen, pause_button_text, self.pause_button_rect, PAUSE_BUTTON_COLOR)
-        self.draw_button(screen, "Durdur", self.stop_button_rect, STOP_BUTTON_COLOR)
+        self.draw_button(screen, BUTTON_TEXTS["stop"], self.stop_button_rect, STOP_BUTTON_COLOR)
 
         # Seçilen yaratığın genetics bilgilerini göster
         if self.selected_creature_info:
             genetics = self.selected_creature_info.genetics
             info_texts = [
-                f"Consumption Rate: {genetics.consumption_rate:.2f}",
-                f"Action Zone Ratio: {genetics.action_zone_ratio:.2f}",
-                f"Production Rate: {genetics.production_rate:.2f}",
-                f"Energy Capacity: {genetics.energy_capacity:.2f}",
-                f"Consume Others: {genetics.consume_other_creatures_ratio:.2f}"
+                INFO_TEXTS["consumption_rate"].format(genetics.consumption_rate),
+                INFO_TEXTS["action_zone_ratio"].format(genetics.action_zone_ratio),
+                INFO_TEXTS["production_rate"].format(genetics.production_rate),
+                INFO_TEXTS["energy_capacity"].format(genetics.energy_capacity),
+                INFO_TEXTS["consume_others"].format(genetics.consume_other_creatures_ratio)
             ]
             # Bilgileri durdur butonunun altına yaz
             y_offset = self.stop_button_rect.bottom + BUTTON_MARGIN
             for text in info_texts:
                 self.draw_info_text(screen, text, self.screen_width + BUTTON_MARGIN, y_offset)
-                y_offset += BUTTON_FONT_SIZE + 5  # Satırlar arası boşluk
+                y_offset += INFO_FONT_SIZE + 5  # Satırlar arası boşluk (INFO_FONT_SIZE kullanılıyor)
 
     # Olayları işle
     def handle_events(self, event, creatures):
