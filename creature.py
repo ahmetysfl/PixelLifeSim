@@ -186,6 +186,17 @@ class Creature:
                     # Create new creature
                     new_creature = Creature(new_x, new_y, genetics=new_genetics)
                     new_creature.energy = new_energy
+
+                    # Copy the parent's brain weights to the child
+                    new_creature.brain = {
+                        'input_to_hidden1': self.brain['input_to_hidden1'].copy(),
+                        'hidden1_to_hidden2': self.brain['hidden1_to_hidden2'].copy(),
+                        'hidden2_to_output': self.brain['hidden2_to_output'].copy()
+                    }
+
+                    # Apply mutation to the child's brain
+                    new_creature.random_update_brain(self.mutation_rate)
+
                     world.add_creature(new_creature)
                     break
 
