@@ -23,6 +23,10 @@ CONSUMPTION_RATE_MIN = 0.2
 PRODUCTION_RATE_MAX = 1
 PRODUCTION_RATE_MIN = 0
 
+RESOURCE_SHARE_RATIO_MAX = 1.0  # Maximum resource share ratio
+RESOURCE_SHARE_RATIO_MIN = 0.0  # Minimum resource share ratio
+
+
 # Action Zone Ratio Parameters
 ACTION_ZONE_RATIO_MAX = 1
 ACTION_ZONE_RATIO_MIN = 0
