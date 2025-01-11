@@ -10,7 +10,10 @@ from controlPanel import ControlPanel  # Kontrol paneli sınıfını içe aktar
 
 start_new_sim = True
 use_saved_brains = True
+#use_saved_brains = False
 #start_new_sim = False
+
+start_py_game = True
 
 if start_new_sim:
     # Initialize the world
@@ -18,7 +21,11 @@ if start_new_sim:
     # Initialize creatures
     genetics_list = []
     #genetics_list = sim.create_new_genetics_list()
-    print(len(sim.load_brain_states()))
+    old_brains = sim.load_brain_states()
+    print(len(old_brains))
+    old_brains_to_max_creatures = sim.extend_list_to_size(old_brains,params.MAX_CREATURES + 20)
+    print(len(old_brains_to_max_creatures))
+    random.shuffle(old_brains_to_max_creatures)
     while len(w.creatures) < params.MAX_CREATURES:
         x = random.randint(0, params.WIDTH - params.CREATURE_SIZE_MAX)
         y = random.randint(0, params.HEIGHT - params.CREATURE_SIZE_MAX)
@@ -29,6 +36,11 @@ if start_new_sim:
             else:
                 new_genetics = Genetics()
             new_creature = Creature(x, y, genetics=new_genetics)
+
+            if use_saved_brains:
+                new_creature.brain = old_brains_to_max_creatures.pop()
+            else:
+                pass
             w.add_creature(new_creature)
         else:
             continue
@@ -54,22 +66,23 @@ last_step_time = time.time()
 running = True
 while running:
     # Olayları işle
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        control_panel.handle_events(event,w.creatures)  # Kontrol paneli olaylarını işle
+    if start_py_game:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            control_panel.handle_events(event,w.creatures)  # Kontrol paneli olaylarını işle
 
-    # Ekranı temizle
-    screen.fill((0, 0, 0))
+        # Ekranı temizle
+        screen.fill((0, 0, 0))
 
-    # Simülasyon ekranını çiz
-    for creature in w.creatures:
-        pygame.draw.rect(screen, creature.color, (creature.x, creature.y, creature.creature_size, creature.creature_size))
+        # Simülasyon ekranını çiz
+        for creature in w.creatures:
+            pygame.draw.rect(screen, creature.color, (creature.x, creature.y, creature.creature_size, creature.creature_size))
 
-    # Kontrol panelini çiz
-    control_panel.draw(screen)
+        # Kontrol panelini çiz
+        control_panel.draw(screen)
 
-    pygame.display.flip()
+        pygame.display.flip()
 
     # Simülasyon durdurulduysa döngüden çık
     if control_panel.stopped:

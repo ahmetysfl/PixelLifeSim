@@ -47,8 +47,8 @@ ACTION_COST_RESOURCE_SHARE_WEIGHT = 0.5  # Kaynak paylaşım oranının eylem ma
 
 
 # Crowded Zone Parameters
-CROWDED_ZONE_THRESHOLD = 10  # Kalabalık bölge için minimum yaratık sayısı
-CROWDED_ZONE_RADIUS = CREATURE_SIZE_MAX * 4  # Kalabalık bölge yarıçapı
+CROWDED_ZONE_THRESHOLD = 8  # Kalabalık bölge için minimum yaratık sayısı
+CROWDED_ZONE_RADIUS = CREATURE_SIZE_MAX * 5  # Kalabalık bölge yarıçapı
 
 # Screen dimensions
 WIDTH, HEIGHT = 400, 300

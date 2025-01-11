@@ -2,6 +2,7 @@ import pickle
 import os
 import inspect
 import glob
+import random
 from genetics import Genetics
 
 def save_simulation_state(w, params, save_dir="saved_simulations"):
@@ -62,9 +63,23 @@ def load_brain_states(simulation_filename=None, save_dir="saved_brains"):
     # Dosyayı yükle
     with open(simulation_filename, "rb") as file:
         data = pickle.load(file)
-
-
     return data
+
+
+def extend_list_to_size(original_list, target_size):
+    # Eğer liste zaten hedef boyuttan büyük veya eşitse, olduğu gibi döndür
+    if len(original_list) >= target_size:
+        return original_list
+
+    # Yeni listeyi orijinal liste ile başlat
+    extended_list = original_list.copy()
+
+    # Rastgele elemanlar ekle
+    while len(extended_list) < target_size:
+        random_element = random.choice(original_list)
+        extended_list.append(random_element)
+
+    return extended_list
 
 def create_new_genetics_list ():
     genetics_list = []
