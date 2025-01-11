@@ -9,31 +9,16 @@ import saveSimulation as sim
 from controlPanel import ControlPanel  # Kontrol paneli sınıfını içe aktar
 
 start_new_sim = True
-# start_new_sim = False
+use_saved_brains = True
+#start_new_sim = False
 
 if start_new_sim:
     # Initialize the world
     w = World(params.WIDTH, params.HEIGHT)
     # Initialize creatures
     genetics_list = []
-    producer_genetics = Genetics()
-    producer_genetics.consumption_rate = 0
-    producer_genetics.action_zone_ratio = 0
-    producer_genetics.production_rate = 1
-    producer_genetics.energy_capacity = 0.2
-    producer_genetics.consume_other_creatures_ratio = 0
-    for _ in range(0):
-        genetics_list.append(producer_genetics)
-
-    consumer_genetics = Genetics()
-    consumer_genetics.consumption_rate = 0.25
-    consumer_genetics.action_zone_ratio = 0.5
-    consumer_genetics.production_rate = 0.2
-    consumer_genetics.energy_capacity = 0.6
-    consumer_genetics.consume_other_creatures_ratio = 1
-    for _ in range(0):
-        genetics_list.append(consumer_genetics)
-
+    #genetics_list = sim.create_new_genetics_list()
+    print(len(sim.load_brain_states()))
     while len(w.creatures) < params.MAX_CREATURES:
         x = random.randint(0, params.WIDTH - params.CREATURE_SIZE_MAX)
         y = random.randint(0, params.HEIGHT - params.CREATURE_SIZE_MAX)
@@ -88,6 +73,7 @@ while running:
 
     # Simülasyon durdurulduysa döngüden çık
     if control_panel.stopped:
+        sim.save_brain_states(w)
         break
 
     # Simülasyon duraklatılmadıysa ve durdurulmadıysa devam et
