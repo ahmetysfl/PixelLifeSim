@@ -65,6 +65,18 @@ class Creature:
 
         return np.argmax(outputs)
 
+    def random_update_brain(self, mutation_rate=0.1):
+        """
+        Randomly update the brain weights.
+        mutation_rate: Controls the magnitude of random changes.
+        """
+        for layer in self.brain:
+            # Generate random noise with the same shape as the layer weights
+            random_noise = np.random.uniform(-mutation_rate, mutation_rate, self.brain[layer].shape)
+            # Update the weights with the random noise
+            self.brain[layer] += random_noise
+
+
     def get_inputs(self):
         """Return normalized inputs for the neural network."""
         inputs = [
@@ -137,6 +149,7 @@ class Creature:
             self.energy -= self.action_cost
             # Perform the action
             self.actions[action_index](world)
+            self.random_update_brain(params.BRAIN_LEARNING_RATE)
 
     def reproduction(self, world):
         """Reproduce if conditions are met."""
@@ -214,3 +227,4 @@ class Creature:
             other_creature.energy -= energy_to_eat
             self.energy += energy_to_eat
         self.perform_action_cost()
+
