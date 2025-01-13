@@ -14,6 +14,7 @@ use_saved_brains = False
 #start_new_sim = False
 
 start_py_game = True
+#start_py_game = False
 
 if start_new_sim:
     # Initialize the world
@@ -21,11 +22,12 @@ if start_new_sim:
     # Initialize creatures
     genetics_list = []
     #genetics_list = sim.create_new_genetics_list()
-    old_brains = sim.load_brain_states()
-    print(len(old_brains))
-    old_brains_to_max_creatures = sim.extend_list_to_size(old_brains,params.MAX_CREATURES + 20)
-    print(len(old_brains_to_max_creatures))
-    random.shuffle(old_brains_to_max_creatures)
+    if use_saved_brains:
+        old_brains = sim.load_brain_states()
+        print(len(old_brains))
+        old_brains_to_max_creatures = sim.extend_list_to_size(old_brains,params.MAX_CREATURES + 20)
+        print(len(old_brains_to_max_creatures))
+        random.shuffle(old_brains_to_max_creatures)
     while len(w.creatures) < params.MAX_CREATURES:
         x = random.randint(0, params.WIDTH - params.CREATURE_SIZE_MAX)
         y = random.randint(0, params.HEIGHT - params.CREATURE_SIZE_MAX)
@@ -48,20 +50,21 @@ if start_new_sim:
 else:
     w, params = sim.load_simulation_state()
 
-# Pygame settings
-pygame.init()
-# Pencere boyutunu artırın
-window_width = w.width + 250  # Simülasyon ekranı + kontrol paneli
-window_height = max(w.height, 100)  # Yükseklik, simülasyon ekranı veya kontrol paneli için yeterli olmalı
-screen = pygame.display.set_mode((window_width, window_height))
-pygame.display.set_caption("Life Simulation with Control Panel")
+if start_py_game:
+    # Pygame settings
+    pygame.init()
+    # Pencere boyutunu artırın
+    window_width = w.width + 250  # Simülasyon ekranı + kontrol paneli
+    window_height = max(w.height, 100)  # Yükseklik, simülasyon ekranı veya kontrol paneli için yeterli olmalı
+    screen = pygame.display.set_mode((window_width, window_height))
+    pygame.display.set_caption("Life Simulation with Control Panel")
 
-# Kontrol panelini başlat
-control_panel = ControlPanel(w.width, w.height)
+    # Kontrol panelini başlat
+    control_panel = ControlPanel(w.width, w.height)
 
 # Initial time
 last_step_time = time.time()
-
+step_count = 0
 # Main loop
 running = True
 while running:
@@ -79,24 +82,45 @@ while running:
         for creature in w.creatures:
             pygame.draw.rect(screen, creature.color, (creature.x, creature.y, creature.creature_size, creature.creature_size))
 
+            # Eylem yarıçapı için sarı daire çiz
+            action_radius_color = (255, 255, 0)  # Sarı renk (RGB: 255, 255, 0)
+            action_radius = creature.genetics.action_zone_ratio * params.ACTION_ZONE_MAX  # Eylem yarıçapını hesapla
+            pygame.draw.circle(screen, action_radius_color,
+                               (creature.x + creature.creature_size // 2, creature.y + creature.creature_size // 2),
+                               int(action_radius), 1)  # 1 çizgi kalınlığı
+
+            # Algı yarıçapı için beyaz daire çiz
+            sense_radius_color = (255, 255, 255)  # Beyaz renk (RGB: 255, 255, 255)
+            sense_radius = creature.genetics.sense_radius * params.SENSE_RADIUS_GENERAL  # Algı yarıçapını hesapla
+            pygame.draw.circle(screen, sense_radius_color,
+                               (creature.x + creature.creature_size // 2, creature.y + creature.creature_size // 2),
+                               int(sense_radius), 1)  # 1 çizgi kalınlığı
         # Kontrol panelini çiz
         control_panel.draw(screen)
 
         pygame.display.flip()
 
-    # Simülasyon durdurulduysa döngüden çık
-    if control_panel.stopped:
-        sim.save_brain_states(w)
-        break
+        # Simülasyon durdurulduysa döngüden çık
+        if control_panel.stopped:
+            sim.save_brain_states(w)
+            break
 
+    if start_py_game:
     # Simülasyon duraklatılmadıysa ve durdurulmadıysa devam et
-    if not control_panel.paused and not control_panel.stopped:
-        current_time = time.time()
-        if current_time - last_step_time >= params.FIXED_STEP_DURATION:
-            # Canlıları güncelle
-            for creature in w.creatures:
-                creature.update(w)
-            last_step_time = current_time
-
+        if not control_panel.paused and not control_panel.stopped:
+            current_time = time.time()
+            if current_time - last_step_time >= params.FIXED_STEP_DURATION:
+                # Canlıları güncelle
+                for creature in w.creatures:
+                    creature.update(w)
+                last_step_time = current_time
+    else:
+        # Canlıları güncelle
+        for creature in w.creatures:
+            creature.update(w)
+    print(len(w.creatures))
+    print(step_count)
+    step_count += 1
 # Pygame'i kapat
-pygame.quit()
+if start_py_game:
+    pygame.quit()

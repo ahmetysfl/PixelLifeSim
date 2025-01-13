@@ -13,6 +13,7 @@ class Creature:
         self.genetics = genetics if genetics is not None else Genetics()
         self.action_cost = self.calculate_action_cost()
         self.genetic_cost = self.calculate_genetic_cost()
+        self.sensed_distance = [0, 0, 0, 0, 0, 0, 0, 0]
         self.sensed_color = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         self.energy = random.uniform(1, self.genetics.energy_capacity * params.MAX_ENERGY_CAPACITY)  # Energy between 1 and energy_capacity * MAX_ENERGY_CAPACITY
         self.last_energy = self.energy
@@ -117,6 +118,7 @@ class Creature:
             self.genetics.resource_share_ratio
         ]
         inputs += self.sensed_color
+        inputs += self.sensed_distance
         return np.array(inputs)
 
     def calculate_color(self):
@@ -316,14 +318,16 @@ class Creature:
 
         i = 0
         for dx, dy in directions:
-            color = self.sense_color_in_direction(world, dx, dy)
+            color, distance = self.sense_color_in_direction(world, dx, dy)
             self.sensed_color[i] = color[0] / 255
             self.sensed_color[i+1] = color[1] / 255
             self.sensed_color[i+2] = color[2] / 255
-            i +=1
+            self.sensed_distance[i] = distance
+            i += 1
 
     def sense_color_in_direction(self, world, dx, dy):
         """Sense in a specific direction and return the color of the first creature encountered within the sense radius."""
+        distance = 0
         for i in range(1, int(self.genetics.sense_radius*params.SENSE_RADIUS_GENERAL) + 1):
             x = self.x + dx * i
             y = self.y + dy * i
@@ -331,5 +335,6 @@ class Creature:
                 break
             creature = world.get_creature_at(x, y)
             if creature is not None:
-                return creature.color  # Return the color of the sensed creature
-        return  [0,0,0]  # Return None if no creature is sensed
+                distance = i
+                return creature.color, distance  # Return the color of the sensed creature
+        return  [0,0,0], distance  # Return None if no creature is sensed
