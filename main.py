@@ -9,13 +9,18 @@ import saveSimulation as sim
 from controlPanel import ControlPanel  # Kontrol paneli sınıfını içe aktar
 
 start_new_sim = True
+#start_new_sim = False
 start_basic_sim = True
+start_basic_sim = False
 use_saved_brains = True
 use_saved_brains = False
-#start_new_sim = False
+
 
 start_py_game = True
-#start_py_game = False
+start_py_game = False
+
+draw_radius = True
+draw_radius = False
 
 if start_basic_sim:
     w = World(params.WIDTH, params.HEIGHT)
@@ -74,6 +79,8 @@ if start_py_game:
 # Initial time
 last_step_time = time.time()
 step_count = 0
+max_step_count = 500
+all_creatures = []
 # Main loop
 running = True
 while running:
@@ -91,19 +98,20 @@ while running:
         for creature in w.creatures:
             pygame.draw.rect(screen, creature.color, (creature.x, creature.y, creature.creature_size, creature.creature_size))
 
-            # Eylem yarıçapı için sarı daire çiz
-            action_radius_color = (255, 255, 0)  # Sarı renk (RGB: 255, 255, 0)
-            action_radius = creature.genetics.action_zone_ratio * params.ACTION_ZONE_MAX  # Eylem yarıçapını hesapla
-            pygame.draw.circle(screen, action_radius_color,
-                               (creature.x + creature.creature_size // 2, creature.y + creature.creature_size // 2),
-                               int(action_radius), 1)  # 1 çizgi kalınlığı
+            if draw_radius:
+                # Eylem yarıçapı için sarı daire çiz
+                action_radius_color = (255, 255, 0)  # Sarı renk (RGB: 255, 255, 0)
+                action_radius = creature.genetics.action_zone_ratio * params.ACTION_ZONE_MAX  # Eylem yarıçapını hesapla
+                pygame.draw.circle(screen, action_radius_color,
+                                   (creature.x + creature.creature_size // 2, creature.y + creature.creature_size // 2),
+                                   int(action_radius), 1)  # 1 çizgi kalınlığı
 
-            # Algı yarıçapı için beyaz daire çiz
-            sense_radius_color = (255, 255, 255)  # Beyaz renk (RGB: 255, 255, 255)
-            sense_radius = creature.genetics.sense_radius * params.SENSE_RADIUS_GENERAL  # Algı yarıçapını hesapla
-            pygame.draw.circle(screen, sense_radius_color,
-                               (creature.x + creature.creature_size // 2, creature.y + creature.creature_size // 2),
-                               int(sense_radius), 1)  # 1 çizgi kalınlığı
+                # Algı yarıçapı için beyaz daire çiz
+                sense_radius_color = (255, 255, 255)  # Beyaz renk (RGB: 255, 255, 255)
+                sense_radius = creature.genetics.sense_radius * params.SENSE_RADIUS_GENERAL  # Algı yarıçapını hesapla
+                pygame.draw.circle(screen, sense_radius_color,
+                                   (creature.x + creature.creature_size // 2, creature.y + creature.creature_size // 2),
+                                   int(sense_radius), 1)  # 1 çizgi kalınlığı
         # Kontrol panelini çiz
         control_panel.draw(screen)
 
@@ -127,7 +135,13 @@ while running:
         # Canlıları güncelle
         for creature in w.creatures:
             creature.update(w)
+    all_creatures.append(w.creatures)
+    print(step_count)
     step_count += 1
+    if step_count > max_step_count or len(w.creatures) == 0:
+        running = False
+
+sim.save_simulation_steps(all_creatures)
 # Pygame'i kapat
 if start_py_game:
     pygame.quit()

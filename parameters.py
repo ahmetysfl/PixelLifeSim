@@ -1,6 +1,6 @@
 # Parameters
-FIXED_STEP_DURATION = 0.1  # Each step is 0.2 seconds
-MAX_CREATURES = 5
+FIXED_STEP_DURATION = 0.01  # Each step is 0.2 seconds
+MAX_CREATURES = 80
 MAX_ENERGY_CAPACITY = 200
 MIN_ENERGY_CAPACITY = 1
 GENERAL_ENERGY_CONSUMPTION = 8
@@ -55,9 +55,9 @@ ACTION_COST_SENSE_RADIUS_WEIGHT = 0.25  # Yeni eklenen ağırlık
 
 # Crowded Zone Parameters
 CROWDED_ZONE_THRESHOLD = 20  # Kalabalık bölge için minimum yaratık sayısı
-CROWDED_ZONE_RADIUS = CREATURE_SIZE_MAX * 5  # Kalabalık bölge yarıçapı
+CROWDED_ZONE_RADIUS = CREATURE_SIZE_MAX * 3.5 # Kalabalık bölge yarıçapı
 
 # Screen dimensions
-WIDTH, HEIGHT = 500, 500
+WIDTH, HEIGHT = 300, 200
 
 PLOT_PAUSE = 0.2

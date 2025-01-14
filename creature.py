@@ -21,6 +21,7 @@ class Creature:
         self.lifespan = 0
         self.crowded_calculation_ratio = 1
         self.actions = [self.move_up, self.move_down, self.move_left, self.move_right, self.stay_still, self.consume_other_creatures, self.share_resource_to_other_creatures]
+        self.actions_stats = [0 for _ in range(len(self.actions))]
         self.brain = self.initialize_brain()
         self.mutation_rate = params.MUTATION_RATE
         self.color = self.calculate_color()
@@ -192,6 +193,7 @@ class Creature:
             self.energy -= self.action_cost
             # Perform the action
             self.actions[action_index](world)
+            self.actions_stats[action_index] += 1
 
     def reproduction(self, world):
         """Reproduce if conditions are met."""
@@ -253,7 +255,7 @@ class Creature:
     def move_down(self, world):
         new_x = self.x
         new_y = self.y + self.creature_size
-        if world.move_square(self.x, self.y, self.creature_size, new_x, new_y):
+        if world.move_square(self.x, self.y, self.creature_size, new_x, new_y,self):
             self.x, self.y = new_x, new_y
             self.perform_action_cost()
 
@@ -267,7 +269,7 @@ class Creature:
     def move_right(self, world):
         new_x = self.x + self.creature_size
         new_y = self.y
-        if world.move_square(self.x, self.y, self.creature_size, new_x, new_y):
+        if world.move_square(self.x, self.y, self.creature_size, new_x, new_y,self):
             self.x, self.y = new_x, new_y
             self.perform_action_cost()
 
