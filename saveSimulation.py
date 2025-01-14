@@ -112,3 +112,31 @@ def save_simulation_steps(creatures_list, save_dir="saved_simulations_steps"):
         pickle.dump(creatures_list, file)
     print(f"Simulation state saved to {simulation_filename}")
     return simulation_filename
+
+def load_simulation_steps(simulation_filename=None, save_dir="saved_simulations_steps"):
+    """
+    Kaydedilmiş simülasyon adımlarını yükler.
+
+    Args:
+        simulation_filename (str, optional): Yüklenecek dosyanın adı.
+            Belirtilmezse en son kaydedilen dosya yüklenir.
+        save_dir (str, optional): Kaydedilmiş dosyaların bulunduğu dizin.
+            Varsayılan: "saved_simulations_steps".
+
+    Returns:
+        list: Yüklenen yaratık listesi.
+    """
+    # Eğer dosya adı belirtilmemişse, en son kaydedilen dosyayı bul
+    if simulation_filename is None:
+        list_of_files = glob.glob(os.path.join(save_dir, "simulation_*.pkl"))
+        if not list_of_files:
+            raise FileNotFoundError("No saved simulation files found.")
+        simulation_filename = max(list_of_files, key=os.path.getctime)
+        print(f"Loading the most recent simulation file: {simulation_filename}")
+
+    # Dosyayı yükle
+    with open(simulation_filename, "rb") as file:
+        creatures_list = pickle.load(file)
+
+    print(f"Simulation steps loaded from {simulation_filename}")
+    return creatures_list

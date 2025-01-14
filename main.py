@@ -7,13 +7,14 @@ import parameters as params
 from genetics import Genetics
 import saveSimulation as sim
 from controlPanel import ControlPanel  # Kontrol paneli sınıfını içe aktar
+import copy
 
 start_new_sim = True
 #start_new_sim = False
 start_basic_sim = True
 start_basic_sim = False
 use_saved_brains = True
-use_saved_brains = False
+#use_saved_brains = False
 
 
 start_py_game = True
@@ -79,10 +80,13 @@ if start_py_game:
 # Initial time
 last_step_time = time.time()
 step_count = 0
-max_step_count = 500
+max_step_count = 1000
 all_creatures = []
+max_creature_count_world = None
+max_creature_count = 0
 # Main loop
 running = True
+step_running = True
 while running:
     # Olayları işle
     if start_py_game:
@@ -125,23 +129,34 @@ while running:
     if start_py_game:
     # Simülasyon duraklatılmadıysa ve durdurulmadıysa devam et
         if not control_panel.paused and not control_panel.stopped:
-            current_time = time.time()
-            if current_time - last_step_time >= params.FIXED_STEP_DURATION:
-                # Canlıları güncelle
-                for creature in w.creatures:
-                    creature.update(w)
-                last_step_time = current_time
+            step_running = True
+        else:
+            step_running = False
     else:
+            step_running = True
+
+    current_time = time.time()
+    if current_time - last_step_time >= params.FIXED_STEP_DURATION and step_running:
         # Canlıları güncelle
+
         for creature in w.creatures:
             creature.update(w)
-    all_creatures.append(w.creatures)
-    print(step_count)
-    step_count += 1
-    if step_count > max_step_count or len(w.creatures) == 0:
-        running = False
+        last_step_time = current_time
+        step_count += 1
+
+        all_creatures.append(copy.deepcopy(w.creatures))
+        creature_count = len(w.creatures)
+        print(step_count)
+        if creature_count > max_creature_count:
+            max_creature_count = creature_count
+            max_creature_count_world = w
+
+
+        if step_count > max_step_count or creature_count == 0:
+            running = False
 
 sim.save_simulation_steps(all_creatures)
+sim.save_brain_states(max_creature_count_world)
 # Pygame'i kapat
 if start_py_game:
     pygame.quit()
