@@ -246,7 +246,7 @@ class Creature:
     def move_up(self, world):
         new_x = self.x
         new_y = self.y - self.creature_size
-        if world.move_square(self.x, self.y, self.creature_size, new_x, new_y):
+        if world.move_square(self.x, self.y, self.creature_size, new_x, new_y,self):
             self.x, self.y = new_x, new_y
             self.perform_action_cost()
 
@@ -260,7 +260,7 @@ class Creature:
     def move_left(self, world):
         new_x = self.x - self.creature_size
         new_y = self.y
-        if world.move_square(self.x, self.y, self.creature_size, new_x, new_y):
+        if world.move_square(self.x, self.y, self.creature_size, new_x, new_y,self):
             self.x, self.y = new_x, new_y
             self.perform_action_cost()
 
@@ -319,9 +319,9 @@ class Creature:
         i = 0
         for dx, dy in directions:
             color, distance = self.sense_color_in_direction(world, dx, dy)
-            self.sensed_color[i] = color[0] / 255
-            self.sensed_color[i+1] = color[1] / 255
-            self.sensed_color[i+2] = color[2] / 255
+            self.sensed_color[3*i] = color[0] / 255
+            self.sensed_color[3*i+1] = color[1] / 255
+            self.sensed_color[3*i+2] = color[2] / 255
             self.sensed_distance[i] = distance
             i += 1
 
@@ -335,6 +335,7 @@ class Creature:
                 break
             creature = world.get_creature_at(x, y)
             if creature is not None:
-                distance = i
-                return creature.color, distance  # Return the color of the sensed creature
-        return  [0,0,0], distance  # Return None if no creature is sensed
+                if creature is not self:
+                    distance = i
+                    return creature.color, distance  # Return the color of the sensed creature
+        return [0, 0, 0], distance  # Return None if no creature is sensed

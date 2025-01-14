@@ -1,6 +1,6 @@
 # Parameters
 FIXED_STEP_DURATION = 0.1  # Each step is 0.2 seconds
-MAX_CREATURES = 50
+MAX_CREATURES = 5
 MAX_ENERGY_CAPACITY = 200
 MIN_ENERGY_CAPACITY = 1
 GENERAL_ENERGY_CONSUMPTION = 8
@@ -58,6 +58,6 @@ CROWDED_ZONE_THRESHOLD = 20  # Kalabalık bölge için minimum yaratık sayısı
 CROWDED_ZONE_RADIUS = CREATURE_SIZE_MAX * 5  # Kalabalık bölge yarıçapı
 
 # Screen dimensions
-WIDTH, HEIGHT = 400, 300
+WIDTH, HEIGHT = 500, 500
 
 PLOT_PAUSE = 0.2

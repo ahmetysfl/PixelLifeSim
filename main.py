@@ -9,6 +9,7 @@ import saveSimulation as sim
 from controlPanel import ControlPanel  # Kontrol paneli sınıfını içe aktar
 
 start_new_sim = True
+start_basic_sim = True
 use_saved_brains = True
 use_saved_brains = False
 #start_new_sim = False
@@ -16,7 +17,15 @@ use_saved_brains = False
 start_py_game = True
 #start_py_game = False
 
-if start_new_sim:
+if start_basic_sim:
+    w = World(params.WIDTH, params.HEIGHT)
+    new_creature = Creature(20, 20)
+    new_creature.genetics.sense_radius = 1
+    w.add_creature(new_creature)
+    new_creature = Creature(20, 40)
+    new_creature.genetics.sense_radius = 1
+    w.add_creature(new_creature)
+elif start_new_sim:
     # Initialize the world
     w = World(params.WIDTH, params.HEIGHT)
     # Initialize creatures
@@ -118,8 +127,6 @@ while running:
         # Canlıları güncelle
         for creature in w.creatures:
             creature.update(w)
-    print(len(w.creatures))
-    print(step_count)
     step_count += 1
 # Pygame'i kapat
 if start_py_game:
