@@ -217,33 +217,35 @@ class Creature:
                 new_x = self.x + dx
                 new_y = self.y + dy
 
-                # Check if the new position is valid
-                if world.can_fit(new_x, new_y, self.creature_size):
-                    # Split energy between parent and child
-                    new_energy = self.energy / 2
-                    self.energy /= 2
-                    self.lifespan = 0
-                    self.genetics.mutate(self.mutation_rate)
-                    # Apply mutation
-                    new_genetics = self.genetics.create_new_genetics(self.mutation_rate)
-                    self.calculate_genetic_cost()
+                # Check if the new position is within world boundaries
+                if 0 <= new_x < world.width and 0 <= new_y < world.height:
+                    # Check if the new position is valid
+                    if world.can_fit(new_x, new_y, self.creature_size):
+                        # Split energy between parent and child
+                        new_energy = self.energy / 2
+                        self.energy /= 2
+                        self.lifespan = 0
+                        self.genetics.mutate(self.mutation_rate)
+                        # Apply mutation
+                        new_genetics = self.genetics.create_new_genetics(self.mutation_rate)
+                        self.calculate_genetic_cost()
 
-                    # Create new creature
-                    new_creature = Creature(new_x, new_y, genetics=new_genetics)
-                    new_creature.energy = new_energy
+                        # Create new creature
+                        new_creature = Creature(new_x, new_y, genetics=new_genetics)
+                        new_creature.energy = new_energy
 
-                    # Copy the parent's brain weights to the child
-                    new_creature.brain = {
-                        'input_to_hidden1': self.brain['input_to_hidden1'].copy(),
-                        'hidden1_to_hidden2': self.brain['hidden1_to_hidden2'].copy(),
-                        'hidden2_to_output': self.brain['hidden2_to_output'].copy()
-                    }
+                        # Copy the parent's brain weights to the child
+                        new_creature.brain = {
+                            'input_to_hidden1': self.brain['input_to_hidden1'].copy(),
+                            'hidden1_to_hidden2': self.brain['hidden1_to_hidden2'].copy(),
+                            'hidden2_to_output': self.brain['hidden2_to_output'].copy()
+                        }
 
-                    # Apply mutation to the child's brain
-                    new_creature.random_update_brain(self.mutation_rate)
+                        # Apply mutation to the child's brain
+                        new_creature.random_update_brain(self.mutation_rate)
 
-                    world.add_creature(new_creature)
-                    break
+                        world.add_creature(new_creature)
+                        break
 
     def move_up(self, world):
         new_x = self.x
@@ -341,3 +343,28 @@ class Creature:
                     distance = i
                     return creature.color, distance  # Return the color of the sensed creature
         return [0, 0, 0], distance  # Return None if no creature is sensed
+
+    def get_internal_states(self):
+        """
+        Yaratığın iç durumlarını bir sözlük olarak döner.
+        """
+        internal_states = {
+            'x': self.x,
+            'y': self.y,
+            'energy': self.energy,
+            'last_energy': self.last_energy,
+            'lifespan': self.lifespan,
+            'maturity_level': self.maturity_level,
+            'creature_size': self.creature_size,
+            'actions_stats': self.actions_stats,
+            'genetics': {
+                'production_rate': self.genetics.production_rate,
+                'consumption_rate': self.genetics.consumption_rate,
+                'energy_capacity': self.genetics.energy_capacity,
+                'action_zone_ratio': self.genetics.action_zone_ratio,
+                'consume_other_creatures_ratio': self.genetics.consume_other_creatures_ratio,
+                'resource_share_ratio': self.genetics.resource_share_ratio,
+                'sense_radius': self.genetics.sense_radius,
+            },
+        }
+        return internal_states

@@ -18,7 +18,7 @@ use_saved_brains = True
 
 
 start_py_game = True
-start_py_game = False
+#start_py_game = False
 
 draw_radius = True
 draw_radius = False
@@ -43,6 +43,7 @@ elif start_new_sim:
         old_brains_to_max_creatures = sim.extend_list_to_size(old_brains,params.MAX_CREATURES + 20)
         print(len(old_brains_to_max_creatures))
         random.shuffle(old_brains_to_max_creatures)
+
     while len(w.creatures) < params.MAX_CREATURES:
         x = random.randint(0, params.WIDTH - params.CREATURE_SIZE_MAX)
         y = random.randint(0, params.HEIGHT - params.CREATURE_SIZE_MAX)
@@ -55,6 +56,8 @@ elif start_new_sim:
             new_creature = Creature(x, y, genetics=new_genetics)
 
             if use_saved_brains:
+                print(len(w.creatures))
+                print(len(old_brains_to_max_creatures))
                 new_creature.brain = old_brains_to_max_creatures.pop()
             else:
                 pass
@@ -63,7 +66,9 @@ elif start_new_sim:
             continue
     sim.save_simulation_state(w, params)
 else:
+    print("started from previous world")
     w, params = sim.load_simulation_state()
+    print(len(w.creatures))
 
 if start_py_game:
     # Pygame settings
@@ -139,14 +144,16 @@ while running:
     if current_time - last_step_time >= params.FIXED_STEP_DURATION and step_running:
         # Canlıları güncelle
 
+        creature_info = []
         for creature in w.creatures:
             creature.update(w)
+            creature_info.append(creature.get_internal_states())
         last_step_time = current_time
         step_count += 1
 
-        all_creatures.append(copy.deepcopy(w.creatures))
+        all_creatures.append(creature_info)
         creature_count = len(w.creatures)
-        print(step_count)
+        print(f"Step Count: {step_count}, Total Creatures: {len(w.creatures)}")
         if creature_count > max_creature_count:
             max_creature_count = creature_count
             max_creature_count_world = w
@@ -157,6 +164,7 @@ while running:
 
 sim.save_simulation_steps(all_creatures)
 sim.save_brain_states(max_creature_count_world)
+sim.save_simulation_state(w, params)
 # Pygame'i kapat
 if start_py_game:
     pygame.quit()

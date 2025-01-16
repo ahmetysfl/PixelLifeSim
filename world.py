@@ -20,8 +20,11 @@ class World:
 
     def can_fit(self, x, y, size):
         """Belirtilen koordinatlara yaratık eklenebilir mi kontrol eder."""
-        if x + size > self.width or y + size > self.height:
+        # Koordinatların dünya sınırları içinde olup olmadığını kontrol et
+        if x < 0 or y < 0 or x + size > self.width or y + size > self.height:
             return False
+
+        # Belirtilen alanın boş olup olmadığını kontrol et
         for i in range(y, y + size):
             for j in range(x, x + size):
                 if self.world[i][j] is not None:  # None kontrolü

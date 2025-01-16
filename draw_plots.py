@@ -15,14 +15,19 @@ avg_action_zone_ratio = []
 avg_sense_radius = []
 
 for step in simulations_steps:
-    if (len(step) > 0 ):
-        consumption_rates = [creature.genetics.consumption_rate for creature in step]
-        production_rates = [creature.genetics.production_rate for creature in step]
-        consume_other_ratios = [creature.genetics.consume_other_creatures_ratio for creature in step]
-        resource_share_ratios = [creature.genetics.resource_share_ratio for creature in step]
-        energy_capacities = [creature.genetics.energy_capacity for creature in step]
-        action_zone_ratios = [creature.genetics.action_zone_ratio for creature in step]
-        sense_radii = [creature.genetics.sense_radius for creature in step]
+    if len(step) > 0:
+        # Her bir yaratığın iç durumlarını al
+        #internal_states = [creature.get_internal_states() for creature in step]
+        internal_states = step
+
+        # İlgili değerleri topla
+        consumption_rates = [state['genetics']['consumption_rate'] for state in internal_states]
+        production_rates = [state['genetics']['production_rate'] for state in internal_states]
+        consume_other_ratios = [state['genetics']['consume_other_creatures_ratio'] for state in internal_states]
+        resource_share_ratios = [state['genetics']['resource_share_ratio'] for state in internal_states]
+        energy_capacities = [state['genetics']['energy_capacity'] for state in internal_states]
+        action_zone_ratios = [state['genetics']['action_zone_ratio'] for state in internal_states]
+        sense_radii = [state['genetics']['sense_radius'] for state in internal_states]
 
         # Consumption rate ortalaması
         avg_consumption_rates.append(sum(consumption_rates) / len(consumption_rates))
