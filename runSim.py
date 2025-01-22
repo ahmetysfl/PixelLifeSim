@@ -179,7 +179,7 @@ def run_simulation_loop(max_generations, initial_num_creatures, world_width, wor
 
 # Simülasyon döngüsünü başlat
 run_simulation_loop(
-    max_generations=100,  # Maksimum nesil sayısı
+    max_generations=10000,  # Maksimum nesil sayısı
     initial_num_creatures=200,  # İlk nesildeki yaratık sayısı
     world_width=params.WIDTH,  # Dünyanın genişliği
     world_height=params.HEIGHT,  # Dünyanın yüksekliği

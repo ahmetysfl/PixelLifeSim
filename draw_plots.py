@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 
 # Simülasyon adımlarını yükle
 simulations_steps = sim.load_simulation_steps()
+simulations_steps = sim.load_simulation_steps("saved_simulations_steps/simulation_4000.pkl")
+
 
 # Her bir adım için avg tüketim, üretim oranlarını, yaratık sayısını, consume_other_creatures_ratio, resource_share_ratio, energy_capacity, action_zone_ratio ve sense_radius değerlerini hesapla
 avg_consumption_rates = []
