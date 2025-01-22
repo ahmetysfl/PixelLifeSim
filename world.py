@@ -1,5 +1,6 @@
 import parameters as params
 import math
+from collections import deque
 
 
 class World:
@@ -8,6 +9,7 @@ class World:
         self.height = height + params.CREATURE_SIZE_MAX
         self.world = [[None] * self.width for _ in range(self.height)]  # None ile başlat
         self.creatures = []
+        self.dead_creatures = deque(maxlen=params.MAX_DEAD_CREATURES)  # Sınırlı boyutlu liste
 
     def add_square(self, x, y, size, creature):
         """Belirtilen koordinatlara bir yaratık ekler."""
@@ -64,6 +66,7 @@ class World:
         if creature in self.creatures:
             self.remove_square(creature.x, creature.y, creature.creature_size)
             self.creatures.remove(creature)
+            self.dead_creatures.append(creature)  # Ölen yaratığı listeye ekle
             return True
         return False
 

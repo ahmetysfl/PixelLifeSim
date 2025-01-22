@@ -10,7 +10,7 @@ from controlPanel import ControlPanel  # Kontrol paneli sınıfını içe aktar
 import copy
 
 start_new_sim = True
-#start_new_sim = False
+start_new_sim = False
 start_basic_sim = True
 start_basic_sim = False
 use_saved_brains = True

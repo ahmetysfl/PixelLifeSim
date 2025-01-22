@@ -5,17 +5,33 @@ import glob
 import random
 from genetics import Genetics
 
-def save_simulation_state(w, params, save_dir="saved_simulations"):
+
+def save_simulation_state(w, params, save_dir="saved_simulations", filename=None):
+    """
+    Simülasyon durumunu kaydeder.
+
+    :param w: World nesnesi.
+    :param params: Parametreler.
+    :param save_dir: Kaydedilecek dizin (varsayılan: "saved_simulations").
+    :param filename: Kaydedilecek dosya adı (opsiyonel).
+    :return: Kaydedilen dosyanın tam yolu.
+    """
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    existing_files = [f for f in os.listdir(save_dir) if f.startswith("simulation_")]
-    simulation_number = len(existing_files) + 1
-    simulation_filename = os.path.join(save_dir, f"simulation_{simulation_number}.pkl")
+
+    # Dosya adı belirtilmemişse, otomatik bir dosya adı oluştur
+    if filename is None:
+        existing_files = [f for f in os.listdir(save_dir) if f.startswith("simulation_")]
+        simulation_number = len(existing_files) + 1
+        filename = f"simulation_{simulation_number}.pkl"
+
+    simulation_filename = os.path.join(save_dir, filename)
     params_dict = {name: value for name, value in inspect.getmembers(params) if not name.startswith("__")}
     with open(simulation_filename, "wb") as file:
         pickle.dump({"w": w, "params": params_dict}, file)
     print(f"Simulation state saved to {simulation_filename}")
     return simulation_filename
+
 
 def load_simulation_state(simulation_filename=None, save_dir="saved_simulations"):
     # Eğer dosya adı belirtilmemişse, en son kaydedilen dosyayı bul
@@ -102,16 +118,31 @@ def create_new_genetics_list ():
         genetics_list.append(consumer_genetics)
     return genetics_list
 
-def save_simulation_steps(creatures_list, save_dir="saved_simulations_steps"):
+
+def save_simulation_steps(creatures_list, save_dir="saved_simulations_steps", filename=None):
+    """
+    Simülasyon adımlarını kaydeder.
+
+    :param creatures_list: Yaratık listesi.
+    :param save_dir: Kaydedilecek dizin (varsayılan: "saved_simulations_steps").
+    :param filename: Kaydedilecek dosya adı (opsiyonel).
+    :return: Kaydedilen dosyanın tam yolu.
+    """
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    existing_files = [f for f in os.listdir(save_dir) if f.startswith("simulation_")]
-    simulation_number = len(existing_files) + 1
-    simulation_filename = os.path.join(save_dir, f"simulation_{simulation_number}.pkl")
+
+    # Dosya adı belirtilmemişse, otomatik bir dosya adı oluştur
+    if filename is None:
+        existing_files = [f for f in os.listdir(save_dir) if f.startswith("simulation_")]
+        simulation_number = len(existing_files) + 1
+        filename = f"simulation_{simulation_number}.pkl"
+
+    simulation_filename = os.path.join(save_dir, filename)
     with open(simulation_filename, "wb") as file:
         pickle.dump(creatures_list, file)
     print(f"Simulation state saved to {simulation_filename}")
     return simulation_filename
+
 
 def load_simulation_steps(simulation_filename=None, save_dir="saved_simulations_steps"):
     """
